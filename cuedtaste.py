@@ -28,7 +28,7 @@ class NosePoke:
         self.endtime = time.time() + 1200  # endtime is a class-wide condition to help the program exit when the task
         # is over. Usually this variable is changed when a behavioral task program is initiated
         GPIO.setup(self.light, GPIO.OUT)
-        GPIO.setup(self.beam, GPIO.IN)
+        GPIO.setup(self.beam, GPIO.IN) 
 
     def shutdown(self):
         print("blink shutdown")
@@ -46,7 +46,7 @@ class NosePoke:
             if run.value == 1:
                 GPIO.output(self.light, 1)
             if run.value == 1:
-                time.sleep(2 / hz)
+                time.sleep(2 / hz)            # try to consolidate 
                 GPIO.output(self.light, 0)
             if run.value == 1:
                 time.sleep(2 / hz)
@@ -79,14 +79,22 @@ class NosePoke:
 # Tone is a class that controls playback of a specific file. I imagine this class will be changed so that play_tone
 # TODO: In final version, tone should turn on corresponding GPIO pins. 
 class Tone:
-    def __init__(self, file):
+    pin_num = input("please enter the pin num: ") # not going to keep, but just to run
+    def __init__(self, file, pin_num): # added "pin"
         self.file = file
+        #GPIO.setup(self.pin_num, 0) not turned on
+
 
     def play_tone(self):
         print("playing "+str(self.file))
+        # Does this interlock with/command the other RPi to start playing the tone?
+        #GPIO.setup(self.pin_num, 1) turned on
+        
 
     def kill_tone(self):
         print("ending" +str(self.file))
+        #if GPIO.setup(self.pin_num, 1): => check to see if the pin is on, if so, turn it off.
+            #GPIO.setup(self.pin_num, 0)
 
 # Trigger allows a NosePoke and Tone to be associated
 class Trigger(NosePoke, Tone):
@@ -159,7 +167,7 @@ class TasteLine:
         GPIO.output(self.valve, 0)
         GPIO.output(self.intanOut, 0)
 
-    @property
+    @property                                                             # what is property doing here? (comment this out and test it)
     def is_open(self):  # reports if valve is open
         if GPIO.input(self.valve):
             return True
@@ -290,7 +298,7 @@ def cuedtaste():
     while time.time() < endtime:
         while state == 0 and time.time() < endtime:  # state 0: base-state
             print("state 0")
-            rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))
+            rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
             trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
             rew_keep_out.start()
             trig_keep_out.start()
@@ -314,7 +322,7 @@ def cuedtaste():
 
         while state == 2 and time.time() < endtime:  # state 2: Trigger activated/arming Rewarder
             print("state 2")
-            if trig.is_crossed() and time.time() > wait + start:  # if rat trips sensor for 1 sec. continuously,
+            if trig.is_crossed() and time.time() > wait + start:  # if rat trips sensor for 1 sec. continuously,                
                 # move to state 3
                 rew_run.value = 1  # blink rewarder
                 trig_run.value = 0 # stop blinking trigger
