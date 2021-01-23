@@ -47,7 +47,7 @@ class NosePoke:
                 GPIO.output(self.light, 1)
             if run.value == 1:
                 time.sleep(2 / hz)            # try to consolidate 
-                GPIO.output(self.light, 0)
+                GPIO.output(self.light, 0)    # test
             if run.value == 1:
                 time.sleep(2 / hz)
             if run.value == 0:
