@@ -40,6 +40,8 @@ class NosePoke:
     def flash_off(self):  # turn the light off
         GPIO.output(self.light, 0)
 
+    
+
     def flash(self, hz, run):  # bink on and of at frequency hz (LED has physical limit of 3.9)
         print("flashing "+str(self.light)+" start")
         while time.time() < self.endtime:
@@ -298,6 +300,7 @@ def cuedtaste():
     while time.time() < endtime:
         while state == 0 and time.time() < endtime:  # state 0: base-state
             print("state 0")
+            print("0 endtime is: ", endtime)
             rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
             trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
             rew_keep_out.start()
@@ -313,6 +316,7 @@ def cuedtaste():
 
         while state == 1 and time.time() < endtime:  # state 1: new trial started/arming Trigger
             print("state 1")
+            print("1 endtime is: ", endtime)
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 trig.kill_tone()  # stop playing white noise
                 trig_run.value = 2  # trigger light goes from blinking to just on
@@ -322,6 +326,7 @@ def cuedtaste():
 
         while state == 2 and time.time() < endtime:  # state 2: Trigger activated/arming Rewarder
             print("state 2")
+            print("2 endtime is: ", endtime)
             if trig.is_crossed() and time.time() > wait + start:  # if rat trips sensor for 1 sec. continuously,                
                 # move to state 3
                 rew_run.value = 1  # blink rewarder
@@ -338,6 +343,7 @@ def cuedtaste():
 
         while state == 3 and time.time() < endtime:  # state 3: Activating rewarder/delivering taste.
             print("state 3")
+            print("3 endtime is: ", endtime)
             if not rew.is_crossed():
                 start = time.time()
             if rew.is_crossed() and time.time() > start + wait/10:  # if rat crosses rewarder beam, deliver taste
