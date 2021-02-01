@@ -297,7 +297,7 @@ def cuedtaste():
     # 2: Maybe optimize the state walk-through? I'm not sure if I need these nested while loops.
     # 3: Address bug: if state 0 times out (if session ends while state 0 is ongoing) tone still begins playing. You can maybe fix this 
     # by adding an if condition to line 301
-    while time.time() < endtime:
+    while time.time() < endtime: ##should we set up a delay and an "if" control for the rat to make sure the rat follows times?
         while state == 0 and time.time() < endtime:  # state 0: base-state
             print("state 0")
             rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
