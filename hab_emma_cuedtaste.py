@@ -276,14 +276,14 @@ def hab(wait,crosstime,rewardtrigger,hab_num):
                                 trig.killTone()
                                 lines[line].playTone()
                                 start = time.time()
-                                if hab_num == 1:
-                                    state = 0
-                                else:
-                                    print("state 2")
-                                    state = 2
+                                # if hab_num == 1:
+                                #     state = 0
+                                # else:
+                                print("state 2")
+                                state = 2
                         
                 while state == 2: #state 2: trigger trigger/prime reward
-                        if trig.is_crossed() and time.time() > wait+start:
+                        if trig.is_crossed() and time.time() > wait+start or hab_num == 1: # iti variable, the hab1 session doesn't really include a complete shutdown, just reverts to the first state. 
                                 trigRun.value = 0
                                 rewRun.value = 1
                                 deadline = time.time()+crosstime
@@ -292,6 +292,7 @@ def hab(wait,crosstime,rewardtrigger,hab_num):
                                 if rewardtrigger == 1:
                                         lines[1].deliver()
                                 print("state 3")
+
                         if not trig.is_crossed():
                                 trigRun.value = 0
                                 lines[line].killTone()
