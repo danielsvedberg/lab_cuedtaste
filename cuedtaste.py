@@ -59,10 +59,7 @@ class NosePoke:
         print("flashing "+str(self.light)+" start")
 
     def is_crossed(self):  # report if beam is crossed
-        if GPIO.input(self.beam) == 0:
-            return True
-        else:
-            return False
+        return GPIO.input(self.beam) == 1
 
     def keep_out(self, wait):  # report when the animal has stayed out of the nosepoke for duration of [wait] seconds
         print("keep out start")
@@ -81,22 +78,19 @@ class NosePoke:
 # Tone is a class that controls playback of a specific file. I imagine this class will be changed so that play_tone
 # TODO: In final version, tone should turn on corresponding GPIO pins. 
 class Tone:
-    #pin_num = input("please enter the pin num: ") # not going to keep, but just to run
-    def __init__(self, file): # added "pin"
+    def __init__(self, file): 
         self.file = file
-        #GPIO.setup(self.pin_num, 0) not turned on
 
 
     def play_tone(self):
         print("playing "+str(self.file))
         # Does this interlock with/command the other RPi to start playing the tone?
-        #GPIO.setup(self.pin_num, 1) turned on
         
 
     def kill_tone(self):
         print("ending" +str(self.file))
         #if GPIO.setup(self.pin_num, 1): => check to see if the pin is on, if so, turn it off.
-            #GPIO.setup(self.pin_num, 0)
+
 
 # Trigger allows a NosePoke and Tone to be associated
 class Trigger(NosePoke, Tone):
@@ -171,10 +165,7 @@ class TasteLine:
 
     @property                                                             # what is property doing here? (comment this out and test it)
     def is_open(self):  # reports if valve is open
-        if GPIO.input(self.valve):
-            return True
-        else:
-            return False
+        return GPIO.input(self.valve) == 1
 
 
 # TasteToneLine allows for a Tone to be associated with a corresponding TasteLine
@@ -298,7 +289,7 @@ def cuedtaste():
     # 3: Address bug: if state 0 times out (if session ends while state 0 is ongoing) tone still begins playing. You can maybe fix this 
     # by adding an if condition to line 301
     while time.time() < endtime: ##should we set up a delay and an "if" control for the rat to make sure the rat follows times?
-        while state == 0 and time.time() < endtime:  # state 0: base-state
+        while state == 0:  # state 0: base-state
             print("state 0")
             rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
             trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
@@ -313,7 +304,7 @@ def cuedtaste():
             state = 1
             print("new trial")
 
-        while state == 1 and time.time() < endtime:  # state 1: new trial started/arming Trigger
+        while state == 1:  # state 1: new trial started/arming Trigger
             print("state 1")
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 trig.kill_tone()  # stop playing white noise
@@ -322,7 +313,7 @@ def cuedtaste():
                 start = time.time()
                 state = 2
 
-        while state == 2 and time.time() < endtime:  # state 2: Trigger activated/arming Rewarder
+        while state == 2:  # state 2: Trigger activated/arming Rewarder
             print("state 2")
             if trig.is_crossed() and time.time() > wait + start:  # if rat trips sensor for 1 sec. continuously,                
                 # move to state 3
@@ -338,7 +329,7 @@ def cuedtaste():
                 state = 0
                 print("state 0")
 
-        while state == 3 and time.time() < endtime:  # state 3: Activating rewarder/delivering taste.
+        while state == 3:  # state 3: Activating rewarder/delivering taste.
             print("state 3")
             if not rew.is_crossed():
                 start = time.time()

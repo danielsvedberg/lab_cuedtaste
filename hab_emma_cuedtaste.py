@@ -257,61 +257,69 @@ def hab(wait,crosstime,rewardtrigger,hab_num):
         
         state = 0
         while time.time() < endtime:
-                while state == 0: #state 0: initialize/prime trigger
-                        rewKeep_out = mp.Process(target = rew.keep_out, args = (iti,))
-                        trigKeep_out = mp.Process(target = trig.keep_out, args = (iti,))
-                        rewKeep_out.start()
-                        trigKeep_out.start()
-                        
-                        line = random.randint(0,3) #select random taste
-                        rewKeep_out.join()
-                        trigKeep_out.join()
-                        trig.playTone()
-                        print("new trial")
-                        trigRun.value = 1
-                        state = 1
-                        
-                while state == 1: #state 1: start trial/trip
+                if hab_num != 1:
+                        while state == 0: #state 0: initialize/prime trigger
+                                rewKeep_out = mp.Process(target = rew.keep_out, args = (iti,))
+                                trigKeep_out = mp.Process(target = trig.keep_out, args = (iti,))
+                                rewKeep_out.start()
+                                trigKeep_out.start()
+                                
+                                line = random.randint(0,3) #select random taste
+                                rewKeep_out.join()
+                                trigKeep_out.join()
+                                trig.playTone()
+                                print("new trial")
+                                trigRun.value = 1
+                                state = 1
+                                
+                        while state == 1: #state 1: start trial/trip
+                                if trig.is_crossed():
+                                        trig.killTone()
+                                        lines[line].playTone()
+                                        start = time.time()
+                                        # if hab_num == 1:
+                                        #     state = 0
+                                        # else:
+                                        print("state 2")
+                                        state = 2
+                                
+                        while state == 2: #state 2: trigger trigger/prime reward
+                                if trig.is_crossed() and time.time() > wait+start or hab_num == 1: # iti variable, the hab1 session doesn't really include a complete shutdown, just reverts to the first state. 
+                                        trigRun.value = 0
+                                        rewRun.value = 1
+                                        deadline = time.time()+crosstime
+                                        start = time.time()
+                                        state = 3
+                                        if rewardtrigger == 1:
+                                                lines[1].deliver()
+                                        print("state 3")
+
+                                if not trig.is_crossed():
+                                        trigRun.value = 0
+                                        lines[line].killTone()
+                                        state = 0
+                                        print("state 0")
+                                        
+                        while state == 3: 
+                                if not rew.is_crossed():
+                                        start = time.time()
+                                if rew.is_crossed() and time.time() > start+wait:
+                                        lines[line].killTone()
+                                        rewRun.value = 0
+                                        lines[0].deliver()
+                                        print("reward delivered")
+                                        state = 0
+                                if time.time() > deadline:
+                                        lines[line].killTone()
+                                        rewRun.value = 0
+                                        state = 0
+                else:
                         if trig.is_crossed():
-                                trig.killTone()
-                                lines[line].playTone()
-                                start = time.time()
-                                # if hab_num == 1:
-                                #     state = 0
-                                # else:
-                                print("state 2")
-                                state = 2
-                        
-                while state == 2: #state 2: trigger trigger/prime reward
-                        if trig.is_crossed() and time.time() > wait+start or hab_num == 1: # iti variable, the hab1 session doesn't really include a complete shutdown, just reverts to the first state. 
                                 trigRun.value = 0
                                 rewRun.value = 1
-                                deadline = time.time()+crosstime
-                                start = time.time()
-                                state = 3
-                                if rewardtrigger == 1:
-                                        lines[1].deliver()
-                                print("state 3")
-
-                        if not trig.is_crossed():
+                        if rew.is_crossed():
                                 trigRun.value = 0
-                                lines[line].killTone()
-                                state = 0
-                                print("state 0")
-                                
-                while state == 3: 
-                        if not rew.is_crossed():
-                                start = time.time()
-                        if rew.is_crossed() and time.time() > start+wait:
-                                lines[line].killTone()
-                                rewRun.value = 0
-                                lines[0].deliver()
-                                print("reward delivered")
-                                state = 0
-                        if time.time() > deadline:
-                                lines[line].killTone()
-                                rewRun.value = 0
-                                state = 0
+                                rewRun.value = 1
                                 
         trig.killTone()
         lines[line].killTone()

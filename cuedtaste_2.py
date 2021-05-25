@@ -308,9 +308,9 @@ def cuedtaste():
             line = random.randint(0, 3)  # select random taste
             rew_keep_out.join()
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
-            trig.play_tone()  # technically start of state 1
             trig_run.value = 1
             state = 1
+            trig.play_tone()  # technically start of state 1 (I think the tone needs to be after sate 1 is stated, or it will play with 0)
             print("new trial")
 
         while state == 1:  # state 1: new trial started/arming Trigger
