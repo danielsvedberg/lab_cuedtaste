@@ -18,7 +18,9 @@ Created on Mon Oct 19 11:44:50 2020
 
 import pygame as pg
 import os
-import recieve_tone_values as recieve
+#import receive_tone_values as receive
+import multiprocessing as mp
+import socket
 import random #maybe import OS to start the recieve script?
  
 # Define some colors
@@ -30,6 +32,37 @@ RED   = (255,   0,   0)
 screen_w = 800
 screen_h = 480
  
+# def get_value(int):
+#     return int
+
+def receive():
+    #UDP_IP = "129.64.50.48"
+    #when on phone
+    UDP_IP = "172.20.10.8"
+    UDP_PORT = 5005
+
+    sock = socket.socket(socket.AF_INET, # internet
+                        socket.SOCK_DGRAM) #UDP
+
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((UDP_IP, UDP_PORT)) #start here #################################################################### <=
+
+    while True:
+            data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
+            if data:
+                # send this to function that initiates tone/replace keyboard values
+                print("recieved message:", int.from_bytes(data, "big", signed="True"))
+                return int.from_bytes(data, "big", signed="True")
+            else:
+                return None #-1
+#in case we need a function to "target" with mp in order to start the script
+# def start_receive():
+#     os.system('python receive_tone_vlaue')
+
+#added 5/26, mp the receive mehtod
+tone_values = mp.Process(target = receive)
+tone_values.start()
+
 class Block(pg.sprite.Sprite):
     """
     This class represents the ball.
@@ -92,15 +125,12 @@ def load_sound(file):
         print("Warning, unable to load, %s" % file)
     return None
 
-
 if __name__ == "__main__":
     # Initialize Pygame
     pg.init()
-    os.system('python receive_tone_vlaue')
-     
+    
     screen = pg.display.set_mode([screen_w, screen_h])
      
-  
     # created a dictionary containing the .wav files
     audio_dict = {0: "pink_noise.wav", 1: "1000hz_sine.wav", 2: "3000hz_square.wav", 3: "5000hz_saw.wav", 4: "7000hz_unalias.wav"}
     # iterates through the dictionary to load the sound-values that correspond to the keys
@@ -118,7 +148,7 @@ if __name__ == "__main__":
     cue_2 = Blockset(30,-3)
     cue_3 = Blockset(40,-2)
     cue_4 = Blockset(50,-1)
-    cue_5 = Blockset(1,0)
+    cue_5 = Blockset(1,0) 
 
     # Loop until the user clicks the close button.
     done = False
@@ -140,20 +170,20 @@ if __name__ == "__main__":
                 done = True
             #TODO 01/13/21: in addition to switching the visual cues assigned to "cue", each event should also trigger the corresponding sound
             #elif event.type == pg.KEYDOWN:
-            if recieve.get_value() == 0:
+            if receive() == 0:
                 cue = cue_0
                     #TODO 01/13/21: example of playing sound. Implement different sound for every cue, and turn off old sound when new cue triggered
                 pause_play(0)
-            elif recieve.get_value() == 1:
+            elif receive() == 1:
                 cue = cue_1
                 pause_play(1)
-            elif recieve.get_value() == 2:
+            elif receive() == 2:
                 cue = cue_2
                 pause_play(2)
-            elif recieve.get_value() == 3:
+            elif receive() == 3:
                 cue = cue_3
                 pause_play(3)
-            elif recieve.get_value() == 4:
+            elif receive() == 4:
                 cue = cue_4
                 pause_play(4)
         # Go ahead and update the screen with what we've drawn.
@@ -165,3 +195,4 @@ if __name__ == "__main__":
         clock.tick(60)
      
     pg.quit()
+    tone_values.join()

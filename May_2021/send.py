@@ -1,4 +1,3 @@
-from send_tone_value import UDP_IP
 import socket
 import random
 
@@ -10,13 +9,13 @@ def send_tone(value):
 
     MESSAGE = value
 
-    print "UDP target IP:", UDP_IP
-    print "UDP target port:", UDP_PORT
-    print "message:", MESSAGE
+    print("UDP target IP:", UDP_IP)
+    print("UDP target port:", UDP_PORT)
+    print("message:", MESSAGE)
 
     sock = socket.socket(socket.AF_INET, #internet
                         socket.SOCK_DGRAM) # UDP
     sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
     
 value = random.randint(0,4)
-send_tone(str(value))
+send_tone(bytes(value))

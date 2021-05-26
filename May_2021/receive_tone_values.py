@@ -8,8 +8,9 @@ import socket
 
 def get_value(int):
         return int
-
-UDP_IP = "129.64.50.48"
+#UDP_IP = "129.64.50.48"
+#when on phone
+UDP_IP = "172.20.10.8"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET, # internet
