@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 19 11:44:50 2020
-
+bugs fixed
 @author: dsvedberg || emmabarash
 """
 # TODO 01/13/21: make the sounds from the wav. files play alongside the visual cues
