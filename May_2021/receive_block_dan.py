@@ -35,27 +35,28 @@ screen_h = 480
 # def get_value(int):
 #     return int
 
-def receive():
-    #UDP_IP = "129.64.50.48"
+def receive(signal):
+    UDP_IP = "129.64.50.48"
     #when on phone
-    UDP_IP = "172.20.10.8"
+    #UDP_IP = "172.20.10.8"
     UDP_PORT = 5005
 
     sock = socket.socket(socket.AF_INET, # internet
                         socket.SOCK_DGRAM) #UDP
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((UDP_IP, UDP_PORT)) #start here #################################################################### <=shut
+    sock.bind((UDP_IP, UDP_PORT)) 
 
     while True:
             data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
             if data:
                 # send this to function that initiates tone/replace keyboard values
-                print("received message:", int.from_bytes(data, "big", signed="True"))
-                return int.from_bytes(data, "big", signed="True")
-            else:
-                return None #-1
+                signal.value = int.from_bytes(data, "big", signed="True")
+                print("recieved message:", signal.value)
 
+#added 5/26, mp the receive mehtod
+def get_signal():
+    return signal.value
 
 class Block(pg.sprite.Sprite):
     """
@@ -123,10 +124,8 @@ if __name__ == "__main__":
     # Initialize Pygame
     pg.init()
     
-    #added 5/26, mp the receive mehtod  
-    tone_values = mp.Process(target = receive)
-    #create tone values for the mp.Process to pass around
-    tone_values = mp.Value()
+    signal = mp.Value("i", 0)
+    tone_values = mp.Process(target = receive, args = (signal,))
     tone_values.start()
     
     screen = pg.display.set_mode([screen_w, screen_h])
@@ -156,6 +155,7 @@ if __name__ == "__main__":
     # Used to manage how fast the screen updates
     clock = pg.time.Clock()
     cue = cue_5
+    old_value = signal.value
     # -------- Main Program Loop -----------
     while not done:
         # Clear the screen
@@ -163,33 +163,41 @@ if __name__ == "__main__":
 
         #This for-loop checks for key presses that changes the cue, and also to quite the program. 
         #TODO (later): For the final version this needs to be changed to GPIO inputs. 
-        for event in pg.event.get(): 
-            if event.type == pg.QUIT: 
-                done = True
-            if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
-                done = True
-            #TODO 01/13/21: in addition to switching the visual cues assigned to "cue", each event should also trigger the corresponding sound
-            #elif event.type == pg.KEYDOWN:
-            if receive() == 0:
+        # for event in pg.event.get(): 
+        #     if event.type == pg.QUIT: 
+        #         done = True
+        #     if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+        #         done = True
+        #TODO 01/13/21: in addition to switching the visual cues assigned to "cue", each event should also trigger the corresponding sound
+        #elif event.type == pg.KEYDOWN:
+        if old_value != get_signal():
+            print("old value", old_value, "get signal", get_signal())
+            if get_signal() == 0:
                 cue = cue_0
-                    #TODO 01/13/21: example of playing sound. Implement different sound for every cue, and turn off old sound when new cue triggered
                 pause_play(0)
-            elif receive() == 1:
+                    #TODO 01/13/21: example of playing sound. Implement different sound for every cue, and turn off old sound when new cue triggered
+            elif get_signal() == 1:
                 cue = cue_1
                 pause_play(1)
-            elif receive() == 2:
+            elif get_signal() == 2:
                 cue = cue_2
                 pause_play(2)
-            elif receive() == 3:
+            elif get_signal() == 3:
                 cue = cue_3
                 pause_play(3)
-            elif receive() == 4:
+            elif get_signal() == 4:
                 cue = cue_4
                 pause_play(4)
+            elif get_signal() == 5: # added June 1
+                #screen.fill(BLACK)
+                #pg.display.flip()
+                pg.mixer.stop()
+                cue = cue_5 # added June 1
         # Go ahead and update the screen with what we've drawn.
         cue.update()
         cue.draw(screen)
         pg.display.flip()
+        old_value = get_signal()
      
         # Limit to 60 frames per second
         clock.tick(60)

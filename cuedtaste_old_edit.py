@@ -4,24 +4,13 @@ Created on Thu Oct 24 09:00:21 2019
 
 @author: dsvedberg
 """
-
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Sep  9 14:15:36 2019
-
-@author: dsvedberg
-"""
-#import pygame
-
-
-
-
 import time
 import multiprocessing as mp
 import RPi.GPIO as GPIO
 import os
 import datetime
 import random
+
 class nosePoke:
     def __init__(self, light, beam, name):
         self.light = light

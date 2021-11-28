@@ -1,3 +1,6 @@
+""""
+BUG: None
+"""
 """
 Created on Mon Sep  9 14:15:36 2019
 
@@ -12,6 +15,7 @@ import random
 import configparser
 import json
 import csv
+import socket
 
 
 ########################################################################################################################
@@ -87,13 +91,30 @@ class Tone:
         #GPIO.setup(self.pin_num, 0) not turned on
 
 
-    def play_tone(self):
+    def play_tone(self, signal):
+        UDP_IP = "129.64.50.48"
+        #when on phone
+        #UDP_IP = "172.20.10.8"
+        UDP_PORT = 5005
+
+        MESSAGE = signal
+        print(int.from_bytes(signal, 'big'))
+
+        print("UDP target IP:", UDP_IP)
+        print("UDP target port:", UDP_PORT)
+        print("message:", MESSAGE)
+
+        sock = socket.socket(socket.AF_INET, #internet
+                            socket.SOCK_DGRAM) # UDP
+        sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
         print("playing "+str(self.file))
         # Does this interlock with/command the other RPi to start playing the tone?
         #GPIO.setup(self.pin_num, 1) turned on
         
 
     def kill_tone(self):
+        an_int = 5
+        self.play_tone(an_int.to_bytes(2, 'big'))
         print("ending" +str(self.file))
         #if GPIO.setup(self.pin_num, 1): => check to see if the pin is on, if so, turn it off.
             #GPIO.setup(self.pin_num, 0)
@@ -305,25 +326,25 @@ def cuedtaste():
             rew_keep_out.start()
             trig_keep_out.start()
 
-            line = random.randint(0, 3)  # select random taste
+            # line = random.randint(0, 3)  # select random taste
+            line = 3
             rew_keep_out.join()
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             trig_run.value = 1
             state = 1
-            trig.play_tone()  # technically start of state 1 (I think the tone needs to be after sate 1 is stated, or it will play with 0)
+            an_int = 0
+            trig.play_tone(an_int.to_bytes(2, 'big'))  # technically start of state 1 (I think the tone needs to be after sate 1 is stated, or it will play with 0)
             print("new trial")
 
         while state == 1:  # state 1: new trial started/arming Trigger
-            print("state 1")
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 trig.kill_tone()  # stop playing white noise
                 trig_run.value = 2  # trigger light goes from blinking to just on
-                lines[line].play_tone()  # taste-associated cue tone is played, but rat must stay in trigger 1 sec.
+                lines[line].play_tone(line.to_bytes(2, 'big'))  # taste-associated cue tone is played, but rat must stay in trigger 1 sec.
                 start = time.time()
                 state = 2
 
         while state == 2:  # state 2: Trigger activated/arming Rewarder
-            print("state 2")
             if trig.is_crossed() and time.time() > wait + start:  # if rat trips sensor for 1 sec. continuously,                
                 # move to state 3
                 rew_run.value = 1  # blink rewarder
@@ -339,13 +360,13 @@ def cuedtaste():
                 print("state 0")
 
         while state == 3:  # state 3: Activating rewarder/delivering taste.
-            print("state 3")
+            #print("state 3")
             if not rew.is_crossed():
                 start = time.time()
             if rew.is_crossed() and time.time() > start + wait/10:  # if rat crosses rewarder beam, deliver taste
                 lines[line].kill_tone()
                 rew_run.value = 0
-                lines[line].deliver()
+                lines[0].deliver()
                 print("reward delivered")
                 state = 0
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0

@@ -220,7 +220,7 @@ def hab1():
         hab(wait = 0.1, crosstime = 100, rewardtrigger = 1, hab_num = 1)
 
 def hab2():
-        hab(wait = 0.3, crosstime = 60, rewardtrigger = 1, hab_num = 2)
+        hab(wait = 0.3, crosstime = 60, rewardtrigger = 1, hab_num = 2) # 30 iti
         
 def hab3():
         hab(wait = 0.5, crosstime = 30, rewardtrigger = 1, hab_num = 3)
@@ -232,7 +232,7 @@ def hab5():
         hab(wait = 1, crosstime = 10, rewardtrigger = 1, hab_num = 5)
         
 def hab6():
-        hab(wait = 1, crosstime = 10, rewardtrigger = 0, hab_num = 6)
+        hab(wait = 1, crosstime = 10, rewardtrigger = 0, hab_num = 6) 
         
 def hab(wait,crosstime,rewardtrigger,hab_num):
         anID = raw_input("enter animal ID: ")
@@ -277,9 +277,6 @@ def hab(wait,crosstime,rewardtrigger,hab_num):
                                         trig.killTone()
                                         lines[line].playTone()
                                         start = time.time()
-                                        # if hab_num == 1:
-                                        #     state = 0
-                                        # else:
                                         print("state 2")
                                         state = 2
                                 
