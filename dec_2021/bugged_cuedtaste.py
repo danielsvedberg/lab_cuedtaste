@@ -4,9 +4,9 @@
 Created on Mon Oct 19 11:44:50 2020
 bugs fixed
 @author: dsvedberg || emmabarash
+
+EVERYTHING WITH THE TAG: ################ dec. 2021 IS NEW
 """
-# TODO 01/13/21: make the sounds from the wav. files play alongside the visual cues
-# search "TODO 01/13/21" to find areas where I think this will be implemented
 # visit https://github.com/pygame/pygame/blob/main/examples/aliens.py for an example of how I think sounds could be implemented
 # To try the aliens example, enter: python3 -m pygame.examples.aliens into terminal 
 #
@@ -16,6 +16,7 @@ bugs fixed
 # Use number keys 0-5 to switch the cue. 
 # Click x or esc to exit.   
 
+from typing import overload
 import pygame as pg
 import os
 import multiprocessing as mp
@@ -27,13 +28,9 @@ BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
 RED   = (255,   0,   0)
 
-
 # Set the height and width of the screen
 screen_w = 800
 screen_h = 480
-
-# give a unique ID to the new signal.value
-sig_ID = 0
 
 # get the signal from the other RPi
 def receive(signal):
@@ -41,11 +38,12 @@ def receive(signal):
     # UDP_IP = "10.0.0.166"
     # UDP_IP = "10.0.0.115"
     # at school
+    UDP_IP = "172.20.186.173"
     # UDP_IP = "129.64.50.48"
     # black oak
-    UDP_IP = "10.100.11.143"
-    #when on phone
-    #UDP_IP = "172.20.10.8"
+    # UDP_IP = "10.100.11.143"
+    # when on phone
+    # UDP_IP = "172.20.10.8"
     UDP_PORT = 5005
 
     sock = socket.socket(socket.AF_INET, # internet
@@ -59,13 +57,8 @@ def receive(signal):
             if data:
                 # send this to function that initiates tone/replace keyboard values
                 signal.value = int.from_bytes(data, "big", signed="True")
-                global sig_ID
-                sig_ID = sig_ID + 1
-                print("recieved message:", signal.value, "ID", sig_ID)
-
-# provides direct interaction with the passed value
-# def get_signal():
-#     return signal.value
+                sig_ID.value = sig_ID.value + 1 # sets up a unique ID for each value received ################ dec. 2021
+                print("received message:", signal.value, "ID", sig_ID.value)
             
 class Block(pg.sprite.Sprite):
     """
@@ -132,6 +125,10 @@ if __name__ == "__main__":
     # Initialize Pygame
     pg.init()
      
+    manager = mp.Manager()
+    sig_ID = manager.Value('i', 0) # transfers the unique ID from receive function to main program
+    ################################ dec. 2021
+     
     signal = mp.Value("i", 0)
     tone_values = mp.Process(target = receive, args = (signal,))
     tone_values.start()
@@ -166,28 +163,21 @@ if __name__ == "__main__":
     # Used to manage how fast the screen updates
     clock = pg.time.Clock()
     old_value = signal.value
+    old_ID = sig_ID.value ################ dec. 2021
     cue = cue_5
     in_flag = 0 #in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
     # -------- Main Program Loop -----------
     while not done:
-        #t = current time
-        #compare with t0 = start time
-        #mod(t - start time/length sound file)
         # Clear the screen
         screen.fill(WHITE)
 
         #This for-loop checks for key presses that changes the cue, and also to quite the program. 
-        #TODO 01/13/21: in addition to switching the visual cues assigned to "cue", each event should also trigger the corresponding sound
         for event in pg.event.get(): 
             if event.type == pg.QUIT: 
                 done = True
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 done = True
-        # if old_value != get_signal():
-        #print("old value", old_value, "get signal", signal.value)
         
-        if in_flag == 0 and signal.value != old_value:
-            print(signal.value, " flag ", in_flag, " old value ", old_value)
 
         if signal.value == 0 and in_flag == 0:
             cue = cue_0
@@ -222,15 +212,21 @@ if __name__ == "__main__":
         cue.update()
         cue.draw(screen)
         pg.display.flip()
-        # old_value = signal.value
-        old_ID = sig_ID     
+        old_value = signal.value
+        
+        old_ID = sig_ID.value # exchanges old ID value ################ dec. 2021
+
         # Limit to 60 frames per second
         clock.tick(60)
         
         # #if there's any situation where the signal.value changes without triggering signal.value == 5, this statement changes in_flag
-        if signal.value != old_value:
-        # if old_ID != sig_ID:
+        # if signal.value != old_value:
+        if sig_ID.value != old_ID or signal.value != old_value: 
+            print(sig_ID.value, "old", old_ID)
             in_flag = 0
+            
+        if in_flag == 0: ############################### PRINT TO CONSOLE TEST ################ dec. 2021
+            print("old value", old_value, "get signal", signal.value, "old ID", old_ID, "new ID", sig_ID.value)
             
     pg.quit()
     tone_values.join()
