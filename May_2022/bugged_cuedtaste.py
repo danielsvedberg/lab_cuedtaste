@@ -4,6 +4,7 @@
 Created on Mon Oct 19 11:44:50 2020
 bugs fixed
 @author: dsvedberg || emmabarash
+
 EVERYTHING WITH THE TAG: ################ dec. 2021 IS NEW
 """
 # visit https://github.com/pygame/pygame/blob/main/examples/aliens.py for an example of how I think sounds could be implemented
@@ -21,7 +22,22 @@ import os
 import multiprocessing as mp
 import socket
 import random 
- 
+import threading # NEW, May 2022
+
+############## NEW, May 2022
+def synchronized_with_attr(lock_name):
+    
+    def decorator(method):
+			
+        def synced_method(self, *args, **kws):
+            lock = getattr(self, lock_name)
+            with lock:
+                return method(self, *args, **kws)
+                
+        return synced_method
+		
+    return decorator
+
 # Define some colors
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
@@ -32,33 +48,32 @@ screen_w = 800
 screen_h = 480
 
 # get the signal from the other RPi
-def receive(signal):
-    #home
-    # UDP_IP = "10.0.0.166"
-    # UDP_IP = "10.0.0.115"
-    # at school
-    UDP_IP = "10.101.6.44"
-    #UDP_IP = "172.20.186.173"
-    # UDP_IP = "129.64.50.48"
-    # black oak
-    # UDP_IP = "10.100.11.143"
-    # when on phone
-    # UDP_IP = "172.20.10.8"
-    UDP_PORT = 5005
+#def receive(signal):
+    # #home
+    # # UDP_IP = "10.0.0.166"
+    # # UDP_IP = "10.0.0.115"
+    # # at school
+    # UDP_IP = "172.20.186.173"
+    # # UDP_IP = "129.64.50.48"
+    # # black oak
+    # # UDP_IP = "10.100.11.143"
+    # # when on phone
+    # # UDP_IP = "172.20.10.8"
+    # UDP_PORT = 5005
 
-    sock = socket.socket(socket.AF_INET, # internet
-                        socket.SOCK_DGRAM) #UDP
+    # sock = socket.socket(socket.AF_INET, # internet
+    #                     socket.SOCK_DGRAM) #UDP
 
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((UDP_IP, UDP_PORT)) 
+    # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    # sock.bind((UDP_IP, UDP_PORT)) 
 
-    while True:
-            data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
-            if data:
-                # send this to function that initiates tone/replace keyboard values
-                signal.value = int.from_bytes(data, "big", signed="True")
-                sig_ID.value = sig_ID.value + 1 # sets up a unique ID for each value received ################ dec. 2021
-                print("received message:", signal.value, "ID", sig_ID.value)
+    # while True:
+            # data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
+            # if data:
+            #     # send this to function that initiates tone/replace keyboard values
+            #     signal.value = int.from_bytes(data, "big", signed="True")
+            #     sig_ID.value = sig_ID.value + 1 # sets up a unique ID for each value received ################ dec. 2021
+            #     print("received message:", signal.value, "ID", sig_ID.value)
             
 class Block(pg.sprite.Sprite):
     """
@@ -124,14 +139,34 @@ def load_sound(file):
 if __name__ == "__main__":
     # Initialize Pygame
     pg.init()
+
+    #home
+    # UDP_IP = "10.0.0.166"
+    # UDP_IP = "10.0.0.115"
+    # at school
+    #UDP_IP = "172.20.186.173"
+    # UDP_IP = "129.64.50.48"
+    # black oak
+    # UDP_IP = "10.100.11.143"
+    # when on phone
+    # UDP_IP = "172.20.10.8"
+    #train
+    UDP_IP = "10.101.6.44"
+    UDP_PORT = 5005
+
+    sock = socket.socket(socket.AF_INET, # internet
+                        socket.SOCK_DGRAM) #UDP
+
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((UDP_IP, UDP_PORT)) 
+    
+    # manager = mp.Manager()
+    sig_ID = 0 # transfers the unique ID from receive function to main program
+    # ################################ dec. 2021
      
-    manager = mp.Manager()
-    sig_ID = manager.Value('i', 0) # transfers the unique ID from receive function to main program
-    ################################ dec. 2021
-     
-    signal = mp.Value("i", 0)
-    tone_values = mp.Process(target = receive, args = (signal,))
-    tone_values.start()
+    signal = 0
+    # tone_values = mp.Process(target = receive, args = (signal,))
+    # tone_values.start()
     
     screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
     
@@ -145,31 +180,69 @@ if __name__ == "__main__":
     def pause_play(num):
         pg.mixer.stop()
         audio_dict[num].play()
-     
+    
     # This is a list of 'sprites.' Each block in the program is
     # added to this list. The list is managed by a class called 'Group.'
-    cue_0 = Blockset(1,1)
+    # cue_0 = Blockset(1,1)
     #TODO 01/13/21: example of using load sound from pygame, implement for every cue
-    #audio_0 = load_sound("pink_noise.wav")
-    cue_1 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
-    cue_2 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
-    cue_3 = Blockset(1.75,-1000)
-    cue_4 = Blockset(2,-1000) 
-    cue_5 = Blockset(0,0)
+    # audio_0 = load_sound("pink_noise.wav")
+    # cue_1 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
+    # cue_2 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
+    # cue_3 = Blockset(1.75,-1000)
+    # cue_4 = Blockset(2,-1000) 
+    # cue_5 = Blockset(0,0)
     
+    cue_dict = {0: Blockset(1,1), 1: Blockset(1.25,-1000), 2: Blockset(1.35,-1000), 
+        3: Blockset(1.75,-1000), 4: Blockset(2,-1000), 5: Blockset(0,0)}
+
+    def exe_cue(cueTemp):
+        cue = cueTemp    
+        print('cue', cue)
+        # cue.update()
+        #pg.display.update()
+        cue.update()
+        screen.fill(WHITE)
+        cue.draw(screen)
+        pg.display.flip()
+        # clock.tick(60)
+     
     # Loop until the user clicks the close button.
     done = False
      
     # Used to manage how fast the screen updates
     clock = pg.time.Clock()
-    old_value = signal.value
-    old_ID = sig_ID.value ################ dec. 2021
-    cue = cue_5
+    pause_play(0) # to play white noise in the beginning
+    old_value = signal
+    old_ID = sig_ID ################ dec. 2021
+    
+    screen.fill(WHITE)
+    # cue = cue_5
+    # cue.update()
+    # cue.draw(screen)
+    # pg.display.flip()
+    # clock.tick(60)
+    
     in_flag = 0 #in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
     # -------- Main Program Loop -----------
     while not done:
+
+        data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
+        if data:
+            # send this to function that initiates tone/replace keyboard values
+            signal = int.from_bytes(data, "big", signed="True")
+            sig_ID = sig_ID + 1 # sets up a unique ID for each value received ################ dec. 2021
+            print("received message:", signal, "ID", sig_ID)
+       
+        # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
+        # if signal != old_value:
+        if sig_ID != old_ID or signal != old_value: 
+            print(sig_ID, "old", old_ID)
+            in_flag = 0
+            
+        if in_flag == 0: ############################### PRINT TO CONSOLE TEST ################ dec. 2021
+            print("old value", old_value, "get signal", signal, "old ID", old_ID, "new ID", sig_ID)
+     
         # Clear the screen
-        screen.fill(WHITE)
 
         #This for-loop checks for key presses that changes the cue, and also to quite the program. 
         for event in pg.event.get(): 
@@ -178,55 +251,57 @@ if __name__ == "__main__":
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 done = True
         
-
-        if signal.value == 0 and in_flag == 0:
-            cue = cue_0
-            pause_play(0)
+        if signal == 0 and in_flag == 0:
+            # exe_cue(cue_0)
+            exe_cue(cue_dict[0])
+            # cue = cue_0
+            pause_play(0) 
             in_flag = 1
 
-        elif signal.value == 1 and in_flag == 0:
-            cue = cue_1
+        elif signal == 1 and in_flag == 0:
+            # exe_cue(cue_1)
+            # cue = cue_1
+            exe_cue(cue_dict[1])
             pause_play(1)
             in_flag = 1
 
-        elif signal.value == 2 and in_flag == 0:
-            cue = cue_2
+        elif signal == 2 and in_flag == 0:
+            # exe_cue(cue_2)
+            # cue = cue_2
+            exe_cue(cue_dict[2])
             pause_play(2)
             in_flag = 1
 
-        elif signal.value == 3 and in_flag == 0:
-            cue = cue_3
+        elif signal == 3 and in_flag == 0:
+            # cue = cue_3
+            exe_cue(cue_dict[3])
             pause_play(3)
             in_flag = 1
 
-        elif signal.value == 4 and in_flag == 0:
-            cue = cue_4
+        elif signal == 4 and in_flag == 0:
+            # cue = cue_4
+            # exe_cue(cue_4)
+            exe_cue(cue_dict[4])
             pause_play(4)
             in_flag = 1
 
-        elif signal.value == 5: #condition 5 should  stop cues/give "neutral" cue. 
+        elif signal == 5: #condition 5 should  stop cues/give "neutral" cue. 
             pg.mixer.stop()
+            # exe_cue(cue_5)
+            # cue = cue_5
             in_flag = 0
-            cue = cue_5
+            exe_cue(cue_dict[5])
+            # cue = cue_5
         # Go ahead and update the screen with what we've drawn.
-        cue.update()
-        cue.draw(screen)
-        pg.display.flip()
-        old_value = signal.value
+        # cue.update()
+        # cue.draw(screen)
+        # pg.display.flip()
+        old_value = signal
         
-        old_ID = sig_ID.value # exchanges old ID value ################ dec. 2021
+        old_ID = sig_ID # exchanges old ID value ################ dec. 2021
 
         # Limit to 60 frames per second
         clock.tick(60)
         
-        # #if there's any situation where the signal.value changes without triggering signal.value == 5, this statement changes in_flag
-        # if signal.value != old_value:
-        if sig_ID.value != old_ID or signal.value != old_value: 
-            print(sig_ID.value, "old", old_ID)
-            in_flag = 0
-            
-        if in_flag == 0: ############################### PRINT TO CONSOLE TEST ################ dec. 2021
-            print("old value", old_value, "get signal", signal.value, "old ID", old_ID, "new ID", sig_ID.value)
-            
     pg.quit()
-    tone_values.join()
+    # tone_values.join()

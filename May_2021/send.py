@@ -5,7 +5,9 @@ def send_tone(value):
     # home
     # UDP_IP = "10.0.0.166"
     # at school
-    UDP_IP = "129.64.50.48"
+    UDP_IP = "172.20.186.173"
+    # when on laptop
+    #UDP_IP = "10.100.11.143"
     #when on phone
     #UDP_IP = "172.20.10.8"
     UDP_PORT = 5005

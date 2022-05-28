@@ -37,7 +37,7 @@ def receive(signal):
     #home
     #UDP_IP = "10.0.0.166"
     # at school
-    UDP_IP = "129.64.50.48"
+    UDP_IP = "172.20.186.173"
     #when on phone
     #UDP_IP = "172.20.10.8"
     UDP_PORT = 5005
@@ -145,9 +145,9 @@ if __name__ == "__main__":
     # added to this list. The list is managed by a class called 'Group.'
     cue_0 = Blockset(1,1)
     #TODO 01/13/21: example of using load sound from pygame, implement for every cue
-    audio_0 = load_sound("pink_noise.wav")
+    #audio_0 = load_sound("pink_noise.wav")
     cue_1 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
-    cue_2 = Blockset(1.75,-1000) #bare minimum speed needed for flashing is 1000
+    cue_2 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
     cue_3 = Blockset(1.75,-1000)
     cue_4 = Blockset(2,-1000) 
     cue_5 = Blockset(0,0)
