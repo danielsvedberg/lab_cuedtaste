@@ -21,6 +21,7 @@ import os
 import multiprocessing as mp
 import socket
 import random 
+import threading
  
 # Define some colors
 BLACK = (  0,   0,   0)
@@ -30,6 +31,7 @@ RED   = (255,   0,   0)
 # Set the height and width of the screen
 screen_w = 800
 screen_h = 480
+lock = threading.RLock()
 
 # get the signal from the other RPi
 def receive(signal):
@@ -55,9 +57,11 @@ def receive(signal):
     while True:
             data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
             if data:
+                lock.acquire()
                 # send this to function that initiates tone/replace keyboard values
                 signal.value = int.from_bytes(data, "big", signed="True")
                 sig_ID.value = sig_ID.value + 1 # sets up a unique ID for each value received ################ dec. 2021
+                lock.release()
                 print("received message:", signal.value, "ID", sig_ID.value)
             
 class Block(pg.sprite.Sprite):

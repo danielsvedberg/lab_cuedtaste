@@ -197,14 +197,13 @@ if __name__ == "__main__":
 
     def exe_cue(cueTemp):
         cue = cueTemp    
-        print('cue', cue)
         # cue.update()
         #pg.display.update()
         cue.update()
-        screen.fill(WHITE)
+        #screen.fill(WHITE)
         cue.draw(screen)
         pg.display.flip()
-        # clock.tick(60)
+        clock.tick(60)
      
     # Loop until the user clicks the close button.
     done = False
@@ -219,7 +218,7 @@ if __name__ == "__main__":
     # cue = cue_5
     # cue.update()
     # cue.draw(screen)
-    # pg.display.flip()
+    pg.display.flip()
     # clock.tick(60)
     
     in_flag = 0 #in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
@@ -301,7 +300,7 @@ if __name__ == "__main__":
         old_ID = sig_ID # exchanges old ID value ################ dec. 2021
 
         # Limit to 60 frames per second
-        clock.tick(60)
+        # clock.tick(60)
         
     pg.quit()
     # tone_values.join()
