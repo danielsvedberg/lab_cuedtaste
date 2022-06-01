@@ -13,7 +13,7 @@ def send_tone(value):
     # when on phone
     # UDP_IP = "172.20.10.8"
     #train
-    UDP_IP = "10.101.6.44"
+    UDP_IP = "172.20.186.173"
     UDP_PORT = 5005
 
     MESSAGE = value

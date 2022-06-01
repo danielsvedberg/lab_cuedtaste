@@ -20,6 +20,7 @@ from typing import overload
 from xml.sax.handler import EntityResolver
 import pygame as pg
 import os
+import time
 import multiprocessing as mp
 import socket
 import random
@@ -115,7 +116,6 @@ sock.bind((UDP_IP, UDP_PORT))
 
 # manager = mp.Manager()
 sig_ID = 0  # transfers the unique ID from receive function to main program
-# ################################ dec. 2021
 
 signal = 0
 # tone_values = mp.Process(target = receive, args = (signal,))
@@ -173,15 +173,29 @@ old_value = signal
 old_ID = sig_ID  # dec. 2021
 
 screen.fill(WHITE)
-cue = cue_2
+cue = cue_5
 cue.update()
 cue.draw(screen)
 pg.display.flip()
 clock.tick(60)
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
+
+#TODO: fix so that white noise and screen play before each trial (JUNE 1 2022)
 # -------- Main Program Loop -----------
 while not done:
+    # Used to manage how fast the screen updates
+    clock = pg.time.Clock()
+    pause_play(0)  # to play white noise in the beginning
+    old_value = signal
+    old_ID = sig_ID  # dec. 2021
+
+    screen.fill(WHITE)
+    cue = cue_5
+    cue.update()
+    cue.draw(screen)
+    pg.display.flip()
+    clock.tick(60)
     data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
     if data:
         # send this to function that initiates tone/replace keyboard values
@@ -189,74 +203,86 @@ while not done:
         # sets up a unique ID for each value received ################ dec. 2021
         sig_ID = sig_ID + 1
         print("received message:", signal, "ID", sig_ID)
-
-    # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
-    # if signal != old_value:
-    if sig_ID != old_ID or signal != old_value:
-        print(sig_ID, "old", old_ID)
-        in_flag = 0
-
-    if in_flag == 0:  # PRINT TO CONSOLE TEST ################ dec. 2021
-        print("old value", old_value, "get signal",
-                signal, "old ID", old_ID, "new ID", sig_ID)
-
-    # Clear the screen
-
-    # This for-loop checks for key presses that changes the cue, and also to quite the program.
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            done = True
-        if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
-            done = True
-
-    if signal == 0 and in_flag == 0:
-        # exe_cue(cue_dict[0])
-        cue = cue_0
-        pause_play(0)
-        in_flag = 1
-
-    elif signal == 1 and in_flag == 0:
-        cue = cue_1
-        # exe_cue(cue_dict[1])
-        pause_play(1)
-        in_flag = 1
-
-    elif signal == 2 and in_flag == 0:
-        cue = cue_2
-        # exe_cue(cue_dict[2])
-        pause_play(2)
-        in_flag = 1
-
-    elif signal == 3 and in_flag == 0:
-        cue = cue_3
-        # exe_cue(cue_dict[3])
-        pause_play(3)
-        in_flag = 1
-
-    elif signal == 4 and in_flag == 0:
-        cue = cue_4
-        # exe_cue(cue_dict[4])
-        pause_play(4)
-        in_flag = 1
-
-    elif signal == 5:  # condition 5 should  stop cues/give "neutral" cue.
-        pg.mixer.stop()
-        in_flag = 0
-        # exe_cue(cue_dict[5])
-        cue = cue_5
-    # Go ahead and update the screen with what we've drawn.
-    #for entity in cue:
-    cue.update()
-    cue.draw(screen)
-    pg.display.update()
-    pg.display.flip()
+        now = time.time()
     
-    old_value = signal
+        while not done:
+            # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
+            # if signal != old_value:
+            if sig_ID != old_ID or signal != old_value:
+                print(sig_ID, "old", old_ID)
+                in_flag = 0
 
-    old_ID = sig_ID  # exchanges old ID value ################ dec. 2021
+            if in_flag == 0:  # PRINT TO CONSOLE TEST ################ dec. 2021
+                print("old value", old_value, "get signal",
+                        signal, "old ID", old_ID, "new ID", sig_ID)
 
-    # Limit to 60 frames per second
-    clock.tick(20)
+            # Clear the screen
+            screen.fill(WHITE)
+
+            # This for-loop checks for key presses that changes the cue, and also to quite the program.
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    done = True
+                if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+                    done = True
+
+            if signal == 0 and in_flag == 0:
+                # exe_cue(cue_dict[0])
+                cue = cue_0
+                pause_play(0)
+                in_flag = 1
+
+            elif signal == 1 and in_flag == 0:
+                cue = cue_1
+                # exe_cue(cue_dict[1])
+                pause_play(1)
+                in_flag = 1
+
+            elif signal == 2 and in_flag == 0:
+                cue = cue_2
+                # exe_cue(cue_dict[2])
+                pause_play(2)
+                in_flag = 1
+
+            elif signal == 3 and in_flag == 0:
+                cue = cue_3
+                # exe_cue(cue_dict[3])
+                pause_play(3)
+                in_flag = 1
+
+            elif signal == 4 and in_flag == 0:
+                cue = cue_4
+                # exe_cue(cue_dict[4])
+                pause_play(4)
+                in_flag = 1
+
+            elif signal == 5:  # condition 5 should  stop cues/give "neutral" cue.
+                pg.mixer.stop()
+                in_flag = 0
+                # exe_cue(cue_dict[5])
+                cue = cue_5
+            # Go ahead and update the screen with what we've drawn.
+            #for entity in cue:
+            cue.update()
+            cue.draw(screen)
+            pg.display.update()
+            pg.display.flip()
+            
+            old_value = signal
+
+            old_ID = sig_ID  # exchanges old ID value ################ dec. 2021
+
+            # Limit to 60 frames per second
+            clock.tick(20)
+
+            if time.time() >= now + 4:
+                print('true')
+                pg.mixer.stop()
+                screen.fill(BLACK)
+                pg.display.flip()
+                # change the sleep time to ITI
+                time.sleep(4)
+                break
 
 pg.quit()
 # tone_values.join()
