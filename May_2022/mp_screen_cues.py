@@ -4,7 +4,6 @@
 Created on Mon Oct 19 11:44:50 2020
 bugs fixed
 @author: dsvedberg || emmabarash
-
 """
 # visit https://github.com/pygame/pygame/blob/main/examples/aliens.py for an example of how I think sounds could be implemented
 # To try the aliens example, enter: python3 -m pygame.examples.aliens into terminal
@@ -113,12 +112,9 @@ sock = socket.socket(socket.AF_INET,  # internet
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((UDP_IP, UDP_PORT))
 
-# manager = mp.Manager()
 sig_ID = 0  # transfers the unique ID from receive function to main program
 
 signal = 0
-# tone_values = mp.Process(target = receive, args = (signal,))
-# tone_values.start()
 
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
@@ -145,22 +141,6 @@ cue_2 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
 cue_3 = Blockset(1.75,-1000)
 cue_4 = Blockset(2,-1000)
 cue_5 = Blockset(0,0)
-
-# cue_dict = {0: Blockset(1, 1), 1: Blockset(1.25, -1000), 2: Blockset(1.35, -1000),
-#             3: Blockset(1.75, -1000), 4: Blockset(2, -1000), 5: Blockset(0, 0)}
-
-def exe_cue(cueTemp):
-    cue = cueTemp
-    #for entity in cue:
-    # screen.blit(entity.image, entity.rect)
-    cue.update()
-    cue.draw(screen)
-    pg.display.update()
-    # cue.update()
-    # screen.fill(WHITE)
-    # screen.blit(entity.image, entity.rect)
-    pg.display.flip()
-    clock.tick(60)
 
 # Loop until the user clicks the close button.
 done = False
@@ -198,7 +178,7 @@ while not done:
     if data:
         # send this to function that initiates tone/replace keyboard values
         signal = int.from_bytes(data, "big", signed="True")
-        # sets up a unique ID for each value received ################ dec. 2021
+        # sets up a unique ID for each value received 
         sig_ID = sig_ID + 1
         print("received message:", signal, "ID", sig_ID)
         now = time.time()
@@ -210,7 +190,7 @@ while not done:
                 print(sig_ID, "old", old_ID)
                 in_flag = 0
 
-            if in_flag == 0:  # PRINT TO CONSOLE TEST ################ dec. 2021
+            if in_flag == 0:  # PRINT TO CONSOLE TEST 
                 print("old value", old_value, "get signal",
                         signal, "old ID", old_ID, "new ID", sig_ID)
 
@@ -225,32 +205,27 @@ while not done:
                     done = True
 
             if signal == 0 and in_flag == 0:
-                # exe_cue(cue_dict[0])
                 cue = cue_0
                 pause_play(0)
                 in_flag = 1
 
             elif signal == 1 and in_flag == 0:
                 cue = cue_1
-                # exe_cue(cue_dict[1])
                 pause_play(1)
                 in_flag = 1
 
             elif signal == 2 and in_flag == 0:
                 cue = cue_2
-                # exe_cue(cue_dict[2])
                 pause_play(2)
                 in_flag = 1
 
             elif signal == 3 and in_flag == 0:
                 cue = cue_3
-                # exe_cue(cue_dict[3])
                 pause_play(3)
                 in_flag = 1
 
             elif signal == 4 and in_flag == 0:
                 cue = cue_4
-                # exe_cue(cue_dict[4])
                 pause_play(4)
                 in_flag = 1
 
@@ -258,7 +233,6 @@ while not done:
                 pg.mixer.stop()
                 in_flag = 0
                 screen.fill(BLACK)
-                # exe_cue(cue_dict[5])
                 # cue = cue_5
             # Go ahead and update the screen with what we've drawn.
             #for entity in cue:
@@ -269,16 +243,14 @@ while not done:
             
             old_value = signal
 
-            old_ID = sig_ID  # exchanges old ID value ################ dec. 2021
+            old_ID = sig_ID  # exchanges old ID value 
 
             # Limit to 60 frames per second
             clock.tick(20)
 
             if time.time() >= now + 3:
                 signal = 5
-                # pg.display.flip()
                 print('true')
                 break
 
 pg.quit()
-# tone_values.join()
