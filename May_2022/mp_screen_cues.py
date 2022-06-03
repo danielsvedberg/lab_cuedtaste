@@ -167,7 +167,7 @@ done = False
 
 # Used to manage how fast the screen updates
 clock = pg.time.Clock()
-pause_play(0)  # to play white noise in the beginning
+# pause_play(0)  # to play white noise in the beginning
 old_value = signal
 old_ID = sig_ID  # dec. 2021
 
@@ -184,7 +184,7 @@ in_flag = 0  # in flag is used to condition the if statements below so that paus
 while not done:
     # Used to manage how fast the screen updates
     clock = pg.time.Clock()
-    pause_play(0)  # to play white noise in the beginning
+    # pause_play(0)  # to play white noise in the beginning
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
@@ -254,11 +254,12 @@ while not done:
                 pause_play(4)
                 in_flag = 1
 
-            elif signal == 5:  # condition 5 should  stop cues/give "neutral" cue.
+            if signal == 5:  # condition 5 should  stop cues/give "neutral" cue.
                 pg.mixer.stop()
                 in_flag = 0
+                screen.fill(BLACK)
                 # exe_cue(cue_dict[5])
-                cue = cue_5
+                # cue = cue_5
             # Go ahead and update the screen with what we've drawn.
             #for entity in cue:
             cue.update()
@@ -273,14 +274,10 @@ while not done:
             # Limit to 60 frames per second
             clock.tick(20)
 
-            if time.time() >= now + 2:
-                print('true')
-                # pg.mixer.stop()
-                # screen.fill(BLACK)
+            if time.time() >= now + 3:
+                signal = 5
                 # pg.display.flip()
-                # # maybe re-initialize signal to 0? (deactivate value)
-                # # change the sleep time to ITI
-                # time.sleep(4)
+                print('true')
                 break
 
 pg.quit()
