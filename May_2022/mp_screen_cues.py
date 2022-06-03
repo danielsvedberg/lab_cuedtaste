@@ -5,7 +5,6 @@ Created on Mon Oct 19 11:44:50 2020
 bugs fixed
 @author: dsvedberg || emmabarash
 
-EVERYTHING WITH THE TAG: ################ dec. 2021 IS NEW
 """
 # visit https://github.com/pygame/pygame/blob/main/examples/aliens.py for an example of how I think sounds could be implemented
 # To try the aliens example, enter: python3 -m pygame.examples.aliens into terminal
@@ -63,7 +62,6 @@ class Block(pg.sprite.Sprite):
 
     # if self.speed is positive, blocks move right, and if it's negative, blocks move left
     def update(self):
-        print("update")
         self.rect = self.rect.move(self.speed, 0)
         if self.speed < 0 and self.rect.left <= self.origin_x - self.width*2:
             self.rect.left = self.origin_x
@@ -105,7 +103,8 @@ def load_sound(file):
 # Initialize Pygame
 pg.init()
 
-UDP_IP = "172.20.186.173"
+UDP_IP = "129.64.50.48"
+# UDP_IP = "172.20.186.173"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET,  # internet
@@ -147,8 +146,8 @@ cue_3 = Blockset(1.75,-1000)
 cue_4 = Blockset(2,-1000)
 cue_5 = Blockset(0,0)
 
-cue_dict = {0: Blockset(1, 1), 1: Blockset(1.25, -1000), 2: Blockset(1.35, -1000),
-            3: Blockset(1.75, -1000), 4: Blockset(2, -1000), 5: Blockset(0, 0)}
+# cue_dict = {0: Blockset(1, 1), 1: Blockset(1.25, -1000), 2: Blockset(1.35, -1000),
+#             3: Blockset(1.75, -1000), 4: Blockset(2, -1000), 5: Blockset(0, 0)}
 
 def exe_cue(cueTemp):
     cue = cueTemp
@@ -181,7 +180,6 @@ clock.tick(60)
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 
-#TODO: fix so that white noise and screen play before each trial (JUNE 1 2022)
 # -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
@@ -190,12 +188,12 @@ while not done:
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
-    screen.fill(WHITE)
-    cue = cue_5
-    cue.update()
-    cue.draw(screen)
-    pg.display.flip()
-    clock.tick(60)
+    # screen.fill(WHITE)
+    # cue = cue_5
+    # cue.update()
+    # cue.draw(screen)
+    # pg.display.flip()
+    # clock.tick(60)
     data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
     if data:
         # send this to function that initiates tone/replace keyboard values
@@ -275,13 +273,14 @@ while not done:
             # Limit to 60 frames per second
             clock.tick(20)
 
-            if time.time() >= now + 4:
+            if time.time() >= now + 2:
                 print('true')
-                pg.mixer.stop()
-                screen.fill(BLACK)
-                pg.display.flip()
-                # change the sleep time to ITI
-                time.sleep(4)
+                # pg.mixer.stop()
+                # screen.fill(BLACK)
+                # pg.display.flip()
+                # # maybe re-initialize signal to 0? (deactivate value)
+                # # change the sleep time to ITI
+                # time.sleep(4)
                 break
 
 pg.quit()
