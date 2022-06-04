@@ -2,17 +2,7 @@ import socket
 import random
 
 def send_tone(value):
-    # home
-    # UDP_IP = "10.0.0.166"
-    #UDP_IP = "172.20.186.173"
-    #UDP_IP = "10.0.0.115"
-    # at school
-    # UDP_IP = "129.64.50.48"
-    # black oak
-    # UDP_IP = "10.100.11.143"
-    # when on phone
-    # UDP_IP = "172.20.10.8"
-    #train
+    
     UDP_IP = "172.20.186.173"
     UDP_PORT = 5005
 

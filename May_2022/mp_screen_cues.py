@@ -168,12 +168,6 @@ while not done:
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
-    # screen.fill(WHITE)
-    # cue = cue_5
-    # cue.update()
-    # cue.draw(screen)
-    # pg.display.flip()
-    # clock.tick(60)
     data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
     if data:
         # send this to function that initiates tone/replace keyboard values
@@ -233,7 +227,12 @@ while not done:
                 pg.mixer.stop()
                 in_flag = 0
                 screen.fill(BLACK)
-                # cue = cue_5
+                
+            if signal == 8:
+                pg.mixer.stop()
+                in_flag = 0
+                screen.fill(BLACK)
+                done = True
             # Go ahead and update the screen with what we've drawn.
             #for entity in cue:
             cue.update()
@@ -248,7 +247,7 @@ while not done:
             # Limit to 60 frames per second
             clock.tick(20)
 
-            if time.time() >= now + 3:
+            if time.time() >= now + 2:
                 signal = 5
                 print('true')
                 break
