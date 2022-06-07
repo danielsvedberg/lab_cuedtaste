@@ -128,8 +128,11 @@ for key, value in audio_dict.items():
 # @run_once
 
 def pause_play(num):
-    pg.mixer.stop()
-    audio_dict[num].play()
+    if num == 0:
+        audio_dict[num].play(-1)
+    else:
+        pg.mixer.stop()
+        audio_dict[num].play()
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
