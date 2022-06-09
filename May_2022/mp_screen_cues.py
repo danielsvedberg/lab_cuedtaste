@@ -68,8 +68,6 @@ class Block(pg.sprite.Sprite):
             self.rect.right = self.origin_x
 
 # blocket is now modified to make a large block pass through the screen very fast to appear as flashing, rather than many bars moving
-
-
 def Blockset(number, speed):  # instead of number of blocks, number now determines how long block is, which you modulate to change frequency
     spritelist = pg.sprite.Group()
     width = screen_w*(number*10)
@@ -120,13 +118,16 @@ screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
 audio_dict = {0: "pink_noise.wav", 1: "1000hz_sine.wav",
-                2: "3000hz_square.wav", 3: "5000hz_saw.wav", 4: "7000hz_unalias.wav"}
+                2: "3000hz_square.wav", 3: "5000hz_saw.wav", 
+                4: "7000hz_unalias.wav", 5: "error.wav", 6: "success.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
-# function called in the main loop to play new sound according to keypress, which is the "num" parameter
-# @run_once
 
+# function called in the main loop to play new sound according to keypress, which is the "num" parameter
+# if the signal is 0, the pink noise will play until the animal begins the next trial
+# pink noise indicates the ability to start the next trial
+# @run_once
 def pause_play(num):
     if num == 0:
         audio_dict[num].play(-1)
@@ -167,7 +168,6 @@ in_flag = 0  # in flag is used to condition the if statements below so that paus
 while not done:
     # Used to manage how fast the screen updates
     clock = pg.time.Clock()
-    # pause_play(0)  # to play white noise in the beginning
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
@@ -182,7 +182,6 @@ while not done:
     
         while not done:
             # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
-            # if signal != old_value:
             if sig_ID != old_ID or signal != old_value:
                 print(sig_ID, "old", old_ID)
                 in_flag = 0
@@ -231,6 +230,18 @@ while not done:
                 in_flag = 0
                 screen.fill(BLACK)
                 
+            if signal == 6:  # condition 6 should stop cues/give "neutral" cue and bypass delay at the end of the loop
+                pause_play(5)
+                in_flag = 0
+                screen.fill(BLACK)
+                break 
+
+            if signal == 7:  # condition 6 should stop cues/give "neutral" cue and bypass delay at the end of the loop
+                pause_play(6)
+                in_flag = 0
+                screen.fill(BLACK)
+                break 
+
             if signal == 8:
                 pg.mixer.stop()
                 in_flag = 0
@@ -250,7 +261,7 @@ while not done:
             # Limit to 60 frames per second
             clock.tick(20)
 
-            if time.time() >= now + 2:
+            if signal != 6 and signal != 7 and time.time() >= now + 2:
                 signal = 5
                 print('true')
                 break

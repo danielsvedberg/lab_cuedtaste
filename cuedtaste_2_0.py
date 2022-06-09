@@ -4,7 +4,8 @@ BUG: None
 """
 Created on Mon Sep  9 14:15:36 2019
 
-@author: Daniel Svedberg (dsvedberg@brandeis.edu)
+@author: Daniel Svedberg pre-2021 (dsvedberg@brandeis.edu)
+@author: Emma Barash  2021-2022  (emmalala@brandeis.edu)
 """
 import time
 import multiprocessing as mp
@@ -93,8 +94,6 @@ class Tone:
 
     def play_tone(self, signal):
         UDP_IP = "129.64.50.48"
-        #when on phone
-        #UDP_IP = "172.20.10.8"
         UDP_PORT = 5005
 
         MESSAGE = signal
@@ -108,8 +107,6 @@ class Tone:
                             socket.SOCK_DGRAM) # UDP
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
         print("playing "+str(self.file))
-        # Does this interlock with/command the other RPi to start playing the tone?
-        #GPIO.setup(self.pin_num, 1) turned on
         
 
     def kill_tone(self):
@@ -117,7 +114,7 @@ class Tone:
         self.play_tone(an_int.to_bytes(2, 'big'))
         print("ending" +str(self.file))
         #if GPIO.setup(self.pin_num, 1): => check to see if the pin is on, if so, turn it off.
-            #GPIO.setup(self.pin_num, 0)
+            #GPIO.setup(self.pin_num, 0) 
 
 # Trigger allows a NosePoke and Tone to be associated
 class Trigger(NosePoke, Tone):
@@ -318,16 +315,16 @@ def cuedtaste():
     # 2: Maybe optimize the state walk-through? I'm not sure if I need these nested while loops.
     # 3: Address bug: if state 0 times out (if session ends while state 0 is ongoing) tone still begins playing. You can maybe fix this 
     # by adding an if condition to line 301
-    while time.time() < endtime: ##should we set up a delay and an "if" control for the rat to make sure the rat follows times?
-        while state == 0:  # state 0: base-state
+    while time.time() <= endtime: 
+        while state == 0 and time.time() <= endtime:  # state 0: base-state
             print("state 0")
             rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
             trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
             rew_keep_out.start()
             trig_keep_out.start()
 
-            # line = random.randint(0, 3)  # select random taste
-            line = 3
+            line = random.randint(1, 3)  # select random taste
+            # line = 3
             rew_keep_out.join()
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             trig_run.value = 1
@@ -336,30 +333,33 @@ def cuedtaste():
             trig.play_tone(an_int.to_bytes(2, 'big'))  # technically start of state 1 (I think the tone needs to be after sate 1 is stated, or it will play with 0)
             print("new trial")
 
-        while state == 1:  # state 1: new trial started/arming Trigger
+        while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
-                trig.kill_tone()  # stop playing white noise
                 trig_run.value = 2  # trigger light goes from blinking to just on
                 lines[line].play_tone(line.to_bytes(2, 'big'))  # taste-associated cue tone is played, but rat must stay in trigger 1 sec.
                 start = time.time()
                 state = 2
 
-        while state == 2:  # state 2: Trigger activated/arming Rewarder
+        while state == 2 and time.time() <= endtime:  # state 2: Trigger activated/arming Rewarder
             if trig.is_crossed() and time.time() > wait + start:  # if rat trips sensor for 1 sec. continuously,                
                 # move to state 3
-                rew_run.value = 1  # blink rewarder
+                an_int = 7
+                trig.play_tone(an_int.to_bytes(2, 'big'))
                 trig_run.value = 0 # stop blinking trigger
+                rew_run.value = 1  # blink rewarder
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 start = time.time()
                 state = 3
 
             if not trig.is_crossed():  # rat pulled out too early, return to state 0
+                an_int = 6
+                trig.play_tone(an_int.to_bytes(2, 'big'))
                 trig_run.value = 0
-                lines[line].kill_tone()
+                # lines[line].kill_tone()
                 state = 0
                 print("state 0")
 
-        while state == 3:  # state 3: Activating rewarder/delivering taste.
+        while state == 3 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste.
             #print("state 3")
             if not rew.is_crossed():
                 start = time.time()
@@ -376,11 +376,13 @@ def cuedtaste():
 
     trig.kill_tone()  # kill any lingering tones after task is over
     lines[line].kill_tone()
-
+    an_int = 8
+    trig.play_tone(an_int.to_bytes(2, 'big'))
     recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
     rew_flash.join()
     trig_flash.join()
     print("assay completed")
+
 
 
 ########################################################################################################################

@@ -31,21 +31,12 @@ RED   = (255,   0,   0)
 # Set the height and width of the screen
 screen_w = 800
 screen_h = 480
-lock = threading.RLock()
+#lock = threading.RLock()
 
 # get the signal from the other RPi
-def receive(signal):
-    #home
-    # UDP_IP = "10.0.0.166"
-    # UDP_IP = "10.0.0.115"
-    # at school
-    UDP_IP = "10.101.6.44"
-    #UDP_IP = "172.20.186.173"
-    # UDP_IP = "129.64.50.48"
-    # black oak
-    # UDP_IP = "10.100.11.143"
-    # when on phone
-    # UDP_IP = "172.20.10.8"
+def receive(lock, signal):
+
+    UDP_IP = "172.20.186.173"
     UDP_PORT = 5005
 
     sock = socket.socket(socket.AF_INET, # internet
@@ -55,14 +46,15 @@ def receive(signal):
     sock.bind((UDP_IP, UDP_PORT)) 
 
     while True:
-            data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
-            if data:
-                lock.acquire()
-                # send this to function that initiates tone/replace keyboard values
-                signal.value = int.from_bytes(data, "big", signed="True")
-                sig_ID.value = sig_ID.value + 1 # sets up a unique ID for each value received ################ dec. 2021
-                lock.release()
-                print("received message:", signal.value, "ID", sig_ID.value)
+        print('receive loop')
+        lock.acquire()
+        data, addr = sock.recvfrom(1024) #buffer size is 1024 bytes
+        if data:
+            # send this to function that initiates tone/replace keyboard values
+            signal.value = int.from_bytes(data, "big", signed="True")
+            sig_ID.value = sig_ID.value + 1 # sets up a unique ID for each value received ################ dec. 2021
+            lock.release()
+            print("received message:", signal.value, "ID", sig_ID.value)
             
 class Block(pg.sprite.Sprite):
     """
@@ -134,7 +126,7 @@ if __name__ == "__main__":
     ################################ dec. 2021
      
     signal = mp.Value("i", 0)
-    tone_values = mp.Process(target = receive, args = (signal,))
+    tone_values = mp.Process(target = receive, args = (mp.Lock(), signal,))
     tone_values.start()
     
     screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
@@ -174,14 +166,13 @@ if __name__ == "__main__":
     while not done:
         # Clear the screen
         screen.fill(WHITE)
-
+        # print('while loop')
         #This for-loop checks for key presses that changes the cue, and also to quite the program. 
         for event in pg.event.get(): 
             if event.type == pg.QUIT: 
                 done = True
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 done = True
-        
 
         if signal.value == 0 and in_flag == 0:
             cue = cue_0
