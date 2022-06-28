@@ -323,13 +323,13 @@ def cuedtaste():
                 trig_run.value = 2  # trigger light goes from blinking to just on
                 lines[line].play_cue()  # taste-associated cue cue is played
                 trig_run.value = 0
-                rew_run.value = 1
-                deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
-                start = time.time()
                 ss = 1
             else:
                 base.play_cue()
                 state = 2
+                deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
+                start = time.time()
+                rew_run.value = 1
         
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
