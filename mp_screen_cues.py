@@ -141,7 +141,7 @@ def pause_play(num):
         audio_dict[num].play(-1)
     else:
         pg.mixer.stop()
-        audio_dict[num].play(-1)
+        audio_dict[num].play()
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
@@ -150,7 +150,7 @@ cue_0 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
 cue_1 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
 cue_2 = Blockset(1.75,-1000)
 cue_3 = Blockset(2,-1000)
-cue_4 = Blockset(1,0)
+cue_4 = Blockset(1,1)
 cue_5 = Blockset(0,0)
 
 cues = [cue_0,cue_1,cue_2,cue_3,cue_4,cue_5]
@@ -221,13 +221,14 @@ while not done:
                 pause_play(signal)
                 GPIO.output(pins[signal],1)
                 last_pin = pins[signal]
+                cueend = time.time() + 1
                 in_flag = 1
 
-            if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
+            if signal == 5 and in_flag == 0 and time.time() > cueend:  # stop cues/"blank" cue
                 GPIO.output(last_pin,0)
                 pg.mixer.stop()
                 screen.fill(BLACK)
-                in_flag = 1
+                in_flag = 0
                 break 
 
             if signal == 6:
