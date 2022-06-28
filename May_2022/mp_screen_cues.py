@@ -5,6 +5,8 @@ Created on Mon Oct 19 11:44:50 2020
 bugs fixed
 @author: dsvedberg || emmabarash
 """
+
+#TODO: Dig in to intan
 # visit https://github.com/pygame/pygame/blob/main/examples/aliens.py for an example of how I think sounds could be implemented
 # To try the aliens example, enter: python3 -m pygame.examples.aliens into terminal
 #
@@ -22,6 +24,7 @@ import time
 import multiprocessing as mp
 import socket
 import random
+import RPi.GPIO as GPIO
 
 # Define some colors
 BLACK = (0,   0,   0)
@@ -83,9 +86,6 @@ def Blockset(number, speed):  # instead of number of blocks, number now determin
         spritelist.add(block)
     return spritelist
 
-# TODO 01/13/21: Currently unused. Should use this to load sounds and associate with each cue. Check pygame example "aliens" for demo.
-
-
 def load_sound(file):
     if not pg.mixer:
         return None
@@ -117,19 +117,24 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-audio_dict = {0: "pink_noise.wav", 1: "1000hz_sine.wav",
-                2: "3000hz_square.wav", 3: "5000hz_saw.wav", 
-                4: "7000hz_unalias.wav", 5: "error.wav", 6: "success.wav"}
+audio_dict = {0: "3000hz_sine.wav",
+              1: "5000hz_square.wav", 
+              2: "7000hz_saw.wav", 
+              3: "9000hz_unalias.wav",
+              4: "pink_noise.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
 
+pins = [22,23,24,25]
+for pin in pins:
+    GPIO.setup(pin, GPIO.out)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
 # if the signal is 0, the pink noise will play until the animal begins the next trial
 # pink noise indicates the ability to start the next trial
 # @run_once
 def pause_play(num):
-    if num == 0:
+    if num == 4:
         audio_dict[num].play(-1)
     else:
         pg.mixer.stop()
@@ -137,14 +142,15 @@ def pause_play(num):
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-cue_0 = Blockset(1,1)
-# TODO 01/13/21: example of using load sound from pygame, implement for every cue
-# audio_0 = load_sound("pink_noise.wav")
-cue_1 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
-cue_2 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
-cue_3 = Blockset(1.75,-1000)
-cue_4 = Blockset(2,-1000)
+
+cue_0 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
+cue_1 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
+cue_2 = Blockset(1.75,-1000)
+cue_3 = Blockset(2,-1000)
+cue_4 = Blockset(1,1)
 cue_5 = Blockset(0,0)
+
+cues = [cue_0,cue_1,cue_2,cue_3,cue_4,cue_5]
 
 # Loop until the user clicks the close button.
 done = False
@@ -163,8 +169,8 @@ pg.display.flip()
 clock.tick(60)
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
-
-# -------- Main Program Loop -----------
+cnums = [0,1,2,3]
+    
 while not done:
     # Used to manage how fast the screen updates
     clock = pg.time.Clock()
@@ -193,56 +199,34 @@ while not done:
             # Clear the screen
             screen.fill(WHITE)
 
-            # This for-loop checks for key presses that changes the cue, and also to quite the program.
+            # This for-loop checks for key presses that changes the cue, and also to quit the program.
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     done = True
                 if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                     done = True
-
-            if signal == 0 and in_flag == 0:
-                cue = cue_0
-                pause_play(0)
+                    
+            if signal == 4 and in_flag == 0: #trigger open cue
+                cue = cues[signal]
+                pause_play(signal)
                 in_flag = 1
+                    
+            if signal in cnums and in_flag == 1: #taste-offer cue
+                cue = cues[signal]
+                pause_play(signal)
+                GPIO.output(pins[signal],1)
+                last_pin = pins[signal]
+                cueend = time.time() + 1
+                in_flag = 2
 
-            elif signal == 1 and in_flag == 0:
-                cue = cue_1
-                pause_play(1)
-                in_flag = 1
-
-            elif signal == 2 and in_flag == 0:
-                cue = cue_2
-                pause_play(2)
-                in_flag = 1
-
-            elif signal == 3 and in_flag == 0:
-                cue = cue_3
-                pause_play(3)
-                in_flag = 1
-
-            elif signal == 4 and in_flag == 0:
-                cue = cue_4
-                pause_play(4)
-                in_flag = 1
-
-            if signal == 5:  # condition 5 should  stop cues/give "neutral" cue.
+            if signal == 5 and in_flag == 2 and time.time() > cueend:  # stop cues/"blank" cue
+                GPIO.output(last_pin,0)
                 pg.mixer.stop()
-                in_flag = 0
                 screen.fill(BLACK)
-                
-            if signal == 6:  # condition 6 should stop cues/give "neutral" cue and bypass delay at the end of the loop
-                pause_play(5)
                 in_flag = 0
-                screen.fill(BLACK)
                 break 
 
-            if signal == 7:  # condition 6 should stop cues/give "neutral" cue and bypass delay at the end of the loop
-                pause_play(6)
-                in_flag = 0
-                screen.fill(BLACK)
-                break 
-
-            if signal == 8:
+            if signal == 6:
                 pg.mixer.stop()
                 in_flag = 0
                 screen.fill(BLACK)
