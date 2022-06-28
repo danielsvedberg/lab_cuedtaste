@@ -107,11 +107,6 @@ class Cue:
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
         print("playing "+str(self.signal))
 
-    def kill_cue(self):
-        an_int = 5
-        self.play_cue(an_int.to_bytes(2, 'big'))
-        print("ending" +str(self.signal))
-
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
     def __init__(self, light, beam, signal):
@@ -346,10 +341,8 @@ def cuedtaste():
                 rew_run.value = 0
                 state = 0
 
-    trig.kill_cue()  # kill any lingering cues after task is over
-    lines[line].kill_cue()
-    an_int = 8
-    trig.play_cue(an_int.to_bytes(2, 'big'))
+    base.play_cue()  # kill any lingering cues after task is over
+    end.play_cue()
     recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
     rew_flash.join()
     trig_flash.join()
@@ -383,6 +376,7 @@ if __name__=="__main__":
     sigs = [0,1,2,3]
     lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i]) for i in range(4)]
     base = Cue(5)
+    end = Cue(6)
     
     # initialize nosepokes:
     rew = NosePoke(36, 11)  # initialize "reward" nosepoke. "Rew" uses GPIO pins 38 as output for the light, and 11 as
