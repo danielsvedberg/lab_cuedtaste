@@ -127,6 +127,9 @@ for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
 
 pins = [22,23,24,25]
+GPIO.setwarnings(False)
+GPIO.cleanup() #turn off any GPIO pins that might be on
+GPIO.setmode(GPIO.BOARD)
 for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
