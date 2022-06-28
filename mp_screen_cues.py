@@ -126,7 +126,7 @@ audio_dict = {0: "3000hz_sine.wav",
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
 
-pins = [22,23,24,25]
+pins = [11,13,15,16]
 GPIO.setwarnings(False)
 GPIO.cleanup() #turn off any GPIO pins that might be on
 GPIO.setmode(GPIO.BOARD)
