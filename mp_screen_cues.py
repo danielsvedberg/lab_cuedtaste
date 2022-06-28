@@ -117,10 +117,10 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-audio_dict = {0: "3000hz_sine.wav",
-              1: "5000hz_square.wav", 
-              2: "7000hz_saw.wav", 
-              3: "9000hz_unalias.wav",
+audio_dict = {0: "3000hz_square.wav",
+              1: "5000hz_saw.wav", 
+              2: "7000hz_unalias.wav", 
+              3: "9000hz_sine.wav",
               4: "pink_noise.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
@@ -210,23 +210,25 @@ while not done:
                     done = True
                     
             if signal == 4 and in_flag == 0: #trigger open cue
+                pg.mixer.stop()
                 cue = cues[signal]
                 pause_play(signal)
                 in_flag = 1
                     
-            if signal in cnums and in_flag == 1: #taste-offer cue
+            if signal in cnums and in_flag == 0: #taste-offer cue
+                pg.mixer.stop()
                 cue = cues[signal]
                 pause_play(signal)
                 GPIO.output(pins[signal],1)
                 last_pin = pins[signal]
                 cueend = time.time() + 1
-                in_flag = 2
+                in_flag = 1
 
-            if signal == 5 and in_flag == 2 and time.time() > cueend:  # stop cues/"blank" cue
+            if signal == 5 and in_flag == 0 and time.time() > cueend:  # stop cues/"blank" cue
                 GPIO.output(last_pin,0)
                 pg.mixer.stop()
                 screen.fill(BLACK)
-                in_flag = 0
+                in_flag = 1
                 break 
 
             if signal == 6:
