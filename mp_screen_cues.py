@@ -221,10 +221,9 @@ while not done:
                 pause_play(signal)
                 GPIO.output(pins[signal],1)
                 last_pin = pins[signal]
-                cueend = time.time() + 1
                 in_flag = 1
 
-            if signal == 5 and in_flag == 0 and time.time() > cueend:  # stop cues/"blank" cue
+            if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
                 GPIO.output(last_pin,0)
                 pg.mixer.stop()
                 screen.fill(BLACK)
