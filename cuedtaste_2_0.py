@@ -105,12 +105,12 @@ class Cue:
         sock = socket.socket(socket.AF_INET, #internet
                             socket.SOCK_DGRAM) # UDP
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
-        print("playing "+str(self.file))
+        print("playing "+str(self.signal))
 
     def kill_cue(self):
         an_int = 5
         self.play_cue(an_int.to_bytes(2, 'big'))
-        print("ending" +str(self.file))
+        print("ending" +str(self.signal))
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
