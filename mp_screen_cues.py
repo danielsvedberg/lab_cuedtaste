@@ -128,7 +128,7 @@ for key, value in audio_dict.items():
 
 pins = [22,23,24,25]
 for pin in pins:
-    GPIO.setup(pin, GPIO.out)
+    GPIO.setup(pin, GPIO.OUT)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
 # if the signal is 0, the pink noise will play until the animal begins the next trial
 # pink noise indicates the ability to start the next trial
