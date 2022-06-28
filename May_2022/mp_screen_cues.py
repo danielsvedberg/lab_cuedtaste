@@ -117,7 +117,7 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-audio_dict = {0: "pink_noise.wav", 1: "1000hz_sine.wav",
+audio_dict = {0: "pink_noise.wav", 1: "9000hz_sine.wav",
                 2: "3000hz_square.wav", 3: "5000hz_saw.wav", 
                 4: "7000hz_unalias.wav", 5: "error.wav", 6: "success.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
