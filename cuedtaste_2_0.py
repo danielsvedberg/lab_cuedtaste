@@ -90,14 +90,14 @@ class Cue:
     #pin_num = input("please enter the pin num: ") # not going to keep, but just to run
     def __init__(self, signal): # added "pin"
         self.signal = signal.to_bytes(2,'big')
+        self.cuestate = False
 
     def play_cue(self):
+        self.cuestate = True
         UDP_IP = "129.64.50.48"
         UDP_PORT = 5005
-
         MESSAGE = self.signal
         print(int.from_bytes(self.signal, 'big'))
-
         print("UDP target IP:", UDP_IP)
         print("UDP target port:", UDP_PORT)
         print("message:", MESSAGE)
@@ -106,6 +106,7 @@ class Cue:
                             socket.SOCK_DGRAM) # UDP
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
         print("playing "+str(self.signal))
+        self.cuestate = False
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
@@ -177,8 +178,7 @@ class TasteLine:
     def kill(self):
         GPIO.output(self.valve, 0)
         GPIO.output(self.intanOut, 0)
-
-    @property                                                             # what is property doing here? (comment this out and test it)
+                                                       
     def is_open(self):  # reports if valve is open
         if GPIO.input(self.valve):
             return True
@@ -203,19 +203,21 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
     localpath = os.getcwd()
     filepath = localpath + "/" + anID + "_" + d + ".csv"
     with open(filepath, mode='w') as record_file:
-        fieldnames = ['Time', 'Poke1', 'Poke2', 'Line1', 'Line2', 'Line3', 'Line4']
+        fieldnames = ['Time', 'Poke1', 'Poke2', 'Line1', 'Line2', 'Line3', 'Line4', 'Cue1', 'Cue2', 'Cue3', 'Cue4']
         record_writer = csv.writer(record_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         record_writer.writerow(fieldnames)
         while time.time() < endtime:
-            t = round(time.time() - starttime, 2)
-            data = [str(t), str(poke1.is_crossed()), str(poke2.is_crossed())]
+
+            data = [poke1.is_crossed(), poke2.is_crossed()]
             for item in lines:
-                if item.is_open:
-                    valvestate = item.taste
-                else:
-                    valvestate = "None"
-                data.append(str(valvestate))
-            record_writer.writerow(data)
+                data.append(item.is_open())
+            for item in lines:
+                data.append(item.cuestate)
+            if any(i == True for i in data):
+                t = [round(time.time() - starttime, 3)]
+                t.extend(data)
+                data = str(data)
+                record_writer.writerow(data)
             time.sleep(0.005)
     print("recording ended")
 
