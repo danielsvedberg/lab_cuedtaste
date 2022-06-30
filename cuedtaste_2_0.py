@@ -214,9 +214,9 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
             for item in lines:
                 data.append(item.cuestate)
             if any(i == True for i in data):
-                t = [round(time.time() - starttime, 3)]
-                t.extend(data)
                 [str(i) for i in data]
+                t = [str(round(time.time() - starttime, 3))]
+                t.extend(data)
                 print(data)
                 record_writer.writerow(data)
             time.sleep(0.005)
