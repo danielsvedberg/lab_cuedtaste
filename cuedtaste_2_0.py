@@ -215,7 +215,7 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
             for item in lines:
                 data.append(item.is_open())
             for item in lines:
-                data.append(item.cuestate)
+                data.append(item.is_playing())
             if any(i == True for i in data):
                 [str(i) for i in data]
                 t = [str(round(time.time() - starttime, 3))]
