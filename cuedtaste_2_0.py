@@ -216,7 +216,7 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
             if any(i == True for i in data):
                 t = [round(time.time() - starttime, 3)]
                 t.extend(data)
-                data = str(data)
+                [str(i) for i in data]
                 record_writer.writerow(data)
             time.sleep(0.005)
     print("recording ended")
