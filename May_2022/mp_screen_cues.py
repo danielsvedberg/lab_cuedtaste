@@ -117,6 +117,7 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
+
 audio_dict = {0: "3000hz_sine.wav",
               1: "5000hz_square.wav", 
               2: "7000hz_saw.wav", 
