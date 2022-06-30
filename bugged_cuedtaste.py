@@ -4,9 +4,9 @@
 Created on Mon Oct 19 11:44:50 2020
 bugs fixed
 @author: dsvedberg || emmabarash
-"""
 
-#TODO: Dig in to intan
+EVERYTHING WITH THE TAG: ################ dec. 2021 IS NEW
+"""
 # visit https://github.com/pygame/pygame/blob/main/examples/aliens.py for an example of how I think sounds could be implemented
 # To try the aliens example, enter: python3 -m pygame.examples.aliens into terminal
 #
@@ -20,11 +20,9 @@ from typing import overload
 from xml.sax.handler import EntityResolver
 import pygame as pg
 import os
-import time
 import multiprocessing as mp
 import socket
 import random
-import RPi.GPIO as GPIO
 
 # Define some colors
 BLACK = (0,   0,   0)
@@ -64,6 +62,7 @@ class Block(pg.sprite.Sprite):
 
     # if self.speed is positive, blocks move right, and if it's negative, blocks move left
     def update(self):
+        print("update")
         self.rect = self.rect.move(self.speed, 0)
         if self.speed < 0 and self.rect.left <= self.origin_x - self.width*2:
             self.rect.left = self.origin_x
@@ -71,6 +70,8 @@ class Block(pg.sprite.Sprite):
             self.rect.right = self.origin_x
 
 # blocket is now modified to make a large block pass through the screen very fast to appear as flashing, rather than many bars moving
+
+
 def Blockset(number, speed):  # instead of number of blocks, number now determines how long block is, which you modulate to change frequency
     spritelist = pg.sprite.Group()
     width = screen_w*(number*10)
@@ -86,6 +87,9 @@ def Blockset(number, speed):  # instead of number of blocks, number now determin
         spritelist.add(block)
     return spritelist
 
+# TODO 01/13/21: Currently unused. Should use this to load sounds and associate with each cue. Check pygame example "aliens" for demo.
+
+
 def load_sound(file):
     if not pg.mixer:
         return None
@@ -100,8 +104,7 @@ def load_sound(file):
 # Initialize Pygame
 pg.init()
 
-UDP_IP = "129.64.50.48"
-# UDP_IP = "172.20.186.173"
+UDP_IP = "172.20.186.173"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET,  # internet
@@ -110,145 +113,150 @@ sock = socket.socket(socket.AF_INET,  # internet
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((UDP_IP, UDP_PORT))
 
+# manager = mp.Manager()
 sig_ID = 0  # transfers the unique ID from receive function to main program
+# ################################ dec. 2021
 
 signal = 0
+# tone_values = mp.Process(target = receive, args = (signal,))
+# tone_values.start()
 
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-
-audio_dict = {0: "3000hz_sine.wav",
-              1: "5000hz_square.wav", 
-              2: "7000hz_saw.wav", 
-              3: "9000hz_unalias.wav",
-              4: "pink_noise.wav"}
+audio_dict = {0: "pink_noise.wav", 1: "1000hz_sine.wav",
+                2: "3000hz_square.wav", 3: "5000hz_saw.wav", 4: "7000hz_unalias.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
-
-pins = [22,23,24,25]
-for pin in pins:
-    GPIO.setup(pin, GPIO.out)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
-# if the signal is 0, the pink noise will play until the animal begins the next trial
-# pink noise indicates the ability to start the next trial
 # @run_once
+
 def pause_play(num):
-    if num == 4:
-        audio_dict[num].play(-1)
-    else:
-        pg.mixer.stop()
-        audio_dict[num].play()
+    pg.mixer.stop()
+    audio_dict[num].play()
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-
-cue_0 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
-cue_1 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
-cue_2 = Blockset(1.75,-1000)
-cue_3 = Blockset(2,-1000)
-cue_4 = Blockset(1,1)
+cue_0 = Blockset(1,1)
+# TODO 01/13/21: example of using load sound from pygame, implement for every cue
+# audio_0 = load_sound("pink_noise.wav")
+cue_1 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
+cue_2 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
+cue_3 = Blockset(1.75,-1000)
+cue_4 = Blockset(2,-1000)
 cue_5 = Blockset(0,0)
 
-cues = [cue_0,cue_1,cue_2,cue_3,cue_4,cue_5]
+cue_dict = {0: Blockset(1, 1), 1: Blockset(1.25, -1000), 2: Blockset(1.35, -1000),
+            3: Blockset(1.75, -1000), 4: Blockset(2, -1000), 5: Blockset(0, 0)}
+
+def exe_cue(cueTemp):
+    cue = cueTemp
+    #for entity in cue:
+    # screen.blit(entity.image, entity.rect)
+    cue.update()
+    cue.draw(screen)
+    pg.display.update()
+    # cue.update()
+    # screen.fill(WHITE)
+    # screen.blit(entity.image, entity.rect)
+    pg.display.flip()
+    clock.tick(60)
 
 # Loop until the user clicks the close button.
 done = False
 
 # Used to manage how fast the screen updates
 clock = pg.time.Clock()
-# pause_play(0)  # to play white noise in the beginning
+pause_play(0)  # to play white noise in the beginning
 old_value = signal
 old_ID = sig_ID  # dec. 2021
 
 screen.fill(WHITE)
-cue = cue_5
+cue = cue_2
 cue.update()
 cue.draw(screen)
 pg.display.flip()
 clock.tick(60)
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
-cnums = [0,1,2,3]
-    
+# -------- Main Program Loop -----------
 while not done:
-    # Used to manage how fast the screen updates
-    clock = pg.time.Clock()
-    old_value = signal
-    old_ID = sig_ID  # dec. 2021
-
     data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
     if data:
         # send this to function that initiates tone/replace keyboard values
         signal = int.from_bytes(data, "big", signed="True")
-        # sets up a unique ID for each value received 
+        # sets up a unique ID for each value received ################ dec. 2021
         sig_ID = sig_ID + 1
         print("received message:", signal, "ID", sig_ID)
-        now = time.time()
+
+    # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
+    # if signal != old_value:
+    if sig_ID != old_ID or signal != old_value:
+        print(sig_ID, "old", old_ID)
+        in_flag = 0
+
+    if in_flag == 0:  # PRINT TO CONSOLE TEST ################ dec. 2021
+        print("old value", old_value, "get signal",
+                signal, "old ID", old_ID, "new ID", sig_ID)
+
+    # Clear the screen
+
+    # This for-loop checks for key presses that changes the cue, and also to quite the program.
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            done = True
+        if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+            done = True
+
+    if signal == 0 and in_flag == 0:
+        # exe_cue(cue_dict[0])
+        cue = cue_0
+        pause_play(0)
+        in_flag = 1
+
+    elif signal == 1 and in_flag == 0:
+        cue = cue_1
+        # exe_cue(cue_dict[1])
+        pause_play(1)
+        in_flag = 1
+
+    elif signal == 2 and in_flag == 0:
+        cue = cue_2
+        # exe_cue(cue_dict[2])
+        pause_play(2)
+        in_flag = 1
+
+    elif signal == 3 and in_flag == 0:
+        cue = cue_3
+        # exe_cue(cue_dict[3])
+        pause_play(3)
+        in_flag = 1
+
+    elif signal == 4 and in_flag == 0:
+        cue = cue_4
+        # exe_cue(cue_dict[4])
+        pause_play(4)
+        in_flag = 1
+
+    elif signal == 5:  # condition 5 should  stop cues/give "neutral" cue.
+        pg.mixer.stop()
+        in_flag = 0
+        # exe_cue(cue_dict[5])
+        cue = cue_5
+    # Go ahead and update the screen with what we've drawn.
+    #for entity in cue:
+    cue.update()
+    cue.draw(screen)
+    pg.display.update()
+    pg.display.flip()
     
-        while not done:
-            # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
-            if sig_ID != old_ID or signal != old_value:
-                print(sig_ID, "old", old_ID)
-                in_flag = 0
+    old_value = signal
 
-            if in_flag == 0:  # PRINT TO CONSOLE TEST 
-                print("old value", old_value, "get signal",
-                        signal, "old ID", old_ID, "new ID", sig_ID)
+    old_ID = sig_ID  # exchanges old ID value ################ dec. 2021
 
-            # Clear the screen
-            screen.fill(WHITE)
-
-            # This for-loop checks for key presses that changes the cue, and also to quit the program.
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    done = True
-                if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
-                    done = True
-                    
-            if signal == 4 and in_flag == 0: #trigger open cue
-                cue = cues[signal]
-                pause_play(signal)
-                in_flag = 1
-                    
-            if signal in cnums and in_flag == 1: #taste-offer cue
-                cue = cues[signal]
-                pause_play(signal)
-                GPIO.output(pins[signal],1)
-                last_pin = pins[signal]
-                cueend = time.time() + 1
-                in_flag = 2
-
-            if signal == 5 and in_flag == 2 and time.time() > cueend:  # stop cues/"blank" cue
-                GPIO.output(last_pin,0)
-                pg.mixer.stop()
-                screen.fill(BLACK)
-                in_flag = 0
-                break 
-
-            if signal == 6:
-                pg.mixer.stop()
-                in_flag = 0
-                screen.fill(BLACK)
-                done = True
-            # Go ahead and update the screen with what we've drawn.
-            #for entity in cue:
-            cue.update()
-            cue.draw(screen)
-            pg.display.update()
-            pg.display.flip()
-            
-            old_value = signal
-
-            old_ID = sig_ID  # exchanges old ID value 
-
-            # Limit to 60 frames per second
-            clock.tick(20)
-
-            if signal != 6 and signal != 7 and time.time() >= now + 2:
-                signal = 5
-                print('true')
-                break
+    # Limit to 60 frames per second
+    clock.tick(20)
 
 pg.quit()
+# tone_values.join()

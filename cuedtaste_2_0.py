@@ -7,6 +7,8 @@ Created on Mon Sep  9 14:15:36 2019
 @author: Daniel Svedberg pre-2021 (dsvedberg@brandeis.edu)
 @author: Emma Barash  2021-2022  (emmalala@brandeis.edu)
 """
+
+#TODO: log cues in csv
 import time
 import multiprocessing as mp
 import RPi.GPIO as GPIO
@@ -45,8 +47,6 @@ class NosePoke:
     def flash_off(self):  # turn the light off
         GPIO.output(self.light, 0)
 
-    
-
     def flash(self, hz, run):  # bink on and of at frequency hz (LED has physical limit of 3.9)
         print("flashing "+str(self.light)+" start")
         while time.time() < self.endtime:
@@ -83,22 +83,19 @@ class NosePoke:
         GPIO.output(self.light, 0)
 
 
-# Tone is a class that controls playback of a specific file. I imagine this class will be changed so that play_tone
-# TODO: In final version, tone should turn on corresponding GPIO pins. 
-class Tone:
+# cue is a class that controls playback of a specific file. I imagine this class will be changed so that play_cue
+class Cue:
     #pin_num = input("please enter the pin num: ") # not going to keep, but just to run
-    def __init__(self, file): # added "pin"
-        self.file = file
-        #GPIO.setup(self.pin_num, 0) not turned on
+    def __init__(self, signal): # added "pin"
+        self.signal = signal.to_bytes(2,'big')
+        self.cuestate = False
 
-
-    def play_tone(self, signal):
+    def play_cue(self):
+        self.cuestate = True
         UDP_IP = "129.64.50.48"
         UDP_PORT = 5005
-
-        MESSAGE = signal
-        print(int.from_bytes(signal, 'big'))
-
+        MESSAGE = self.signal
+        print(int.from_bytes(self.signal, 'big'))
         print("UDP target IP:", UDP_IP)
         print("UDP target port:", UDP_PORT)
         print("message:", MESSAGE)
@@ -106,21 +103,14 @@ class Tone:
         sock = socket.socket(socket.AF_INET, #internet
                             socket.SOCK_DGRAM) # UDP
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
-        print("playing "+str(self.file))
-        
+        print("playing "+str(self.signal))
+        self.cuestate = False
 
-    def kill_tone(self):
-        an_int = 5
-        self.play_tone(an_int.to_bytes(2, 'big'))
-        print("ending" +str(self.file))
-        #if GPIO.setup(self.pin_num, 1): => check to see if the pin is on, if so, turn it off.
-            #GPIO.setup(self.pin_num, 0) 
-
-# Trigger allows a NosePoke and Tone to be associated
-class Trigger(NosePoke, Tone):
-    def __init__(self, light, beam, tonefile):
+# Trigger allows a NosePoke and cue to be associated
+class Trigger(NosePoke, Cue):
+    def __init__(self, light, beam, signal):
         NosePoke.__init__(self, light, beam)
-        Tone.__init__(self, tonefile)
+        Cue.__init__(self, signal)
 
 
 # class TasteLine controls an individual taste-valve and its associated functions: clearouts,
@@ -186,8 +176,7 @@ class TasteLine:
     def kill(self):
         GPIO.output(self.valve, 0)
         GPIO.output(self.intanOut, 0)
-
-    @property                                                             # what is property doing here? (comment this out and test it)
+                                                       
     def is_open(self):  # reports if valve is open
         if GPIO.input(self.valve):
             return True
@@ -195,11 +184,11 @@ class TasteLine:
             return False
 
 
-# TasteToneLine allows for a Tone to be associated with a corresponding TasteLine
-class TasteToneLine(TasteLine, Tone):
-    def __init__(self, valve, intanOut, file, opentime, taste):
+# TastecueLine allows for a cue to be associated with a corresponding TasteLine
+class TasteCueLine(TasteLine, Cue):
+    def __init__(self, valve, intanOut, opentime, taste, signal):
         TasteLine.__init__(self, valve, intanOut, opentime, taste)
-        Tone.__init__(self, file)
+        Cue.__init__(self, signal)
 
 
 ### SECTION 2: MISC. FUNCTIONS
@@ -212,19 +201,21 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
     localpath = os.getcwd()
     filepath = localpath + "/" + anID + "_" + d + ".csv"
     with open(filepath, mode='w') as record_file:
-        fieldnames = ['Time', 'Poke1', 'Poke2', 'Line1', 'Line2', 'Line3', 'Line4']
+        fieldnames = ['Time', 'Poke1', 'Poke2', 'Line1', 'Line2', 'Line3', 'Line4', 'Cue1', 'Cue2', 'Cue3', 'Cue4']
         record_writer = csv.writer(record_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         record_writer.writerow(fieldnames)
         while time.time() < endtime:
-            t = round(time.time() - starttime, 2)
-            data = [str(t), str(poke1.is_crossed()), str(poke2.is_crossed())]
+
+            data = [poke1.is_crossed(), poke2.is_crossed()]
             for item in lines:
-                if item.is_open:
-                    valvestate = item.taste
-                else:
-                    valvestate = "None"
-                data.append(str(valvestate))
-            record_writer.writerow(data)
+                data.append(item.is_open())
+            for item in lines:
+                data.append(item.cuestate)
+            if any(i == True for i in data):
+                [str(i) for i in data]
+                t = [str(round(time.time() - starttime, 3))]
+                t.extend(data)
+                record_writer.writerow(t)
             time.sleep(0.005)
     print("recording ended")
 
@@ -310,74 +301,45 @@ def cuedtaste():
     state = 0  # [state] controls state of task. Refer to PDF of hand-drawn diagram for visual guide
 
     # this loop controls the task as it happens, when [endtime] is reached, loop exits and task program closes out
-    # TODO 01/20/21: 
-    # 1: Alter this loop to fit the process in the flowchart (several steps don't)
-    # 2: Maybe optimize the state walk-through? I'm not sure if I need these nested while loops.
-    # 3: Address bug: if state 0 times out (if session ends while state 0 is ongoing) tone still begins playing. You can maybe fix this 
-    # by adding an if condition to line 301
     while time.time() <= endtime: 
-        while state == 0 and time.time() <= endtime:  # state 0: base-state
-            print("state 0")
+        while state == 0 and time.time() <= endtime:  # state 0: 
             rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
             trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
             rew_keep_out.start()
             trig_keep_out.start()
-
-            line = random.randint(1, 3)  # select random taste
-            # line = 3
             rew_keep_out.join()
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             trig_run.value = 1
+            line = random.randint(0,3)  # select random taste
+            trig.play_cue() 
             state = 1
-            an_int = 0
-            trig.play_tone(an_int.to_bytes(2, 'big'))  # technically start of state 1 (I think the tone needs to be after sate 1 is stated, or it will play with 0)
+
             print("new trial")
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
+                lines[line].play_cue()  # taste-associated cue cue is played
                 trig_run.value = 2  # trigger light goes from blinking to just on
-                lines[line].play_tone(line.to_bytes(2, 'big'))  # taste-associated cue tone is played, but rat must stay in trigger 1 sec.
-                start = time.time()
-                state = 2
-
-        while state == 2 and time.time() <= endtime:  # state 2: Trigger activated/arming Rewarder
-            if trig.is_crossed() and time.time() > wait + start:  # if rat trips sensor for 1 sec. continuously,                
-                # move to state 3
-                an_int = 7
-                trig.play_tone(an_int.to_bytes(2, 'big'))
-                trig_run.value = 0 # stop blinking trigger
-                rew_run.value = 1  # blink rewarder
+                trig_run.value = 0
+                rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 start = time.time()
-                state = 3
+                base.play_cue()
+                state = 2
+                
 
-            if not trig.is_crossed():  # rat pulled out too early, return to state 0
-                an_int = 6
-                trig.play_tone(an_int.to_bytes(2, 'big'))
-                trig_run.value = 0
-                # lines[line].kill_tone()
-                state = 0
-                print("state 0")
-
-        while state == 3 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste.
-            #print("state 3")
-            if not rew.is_crossed():
-                start = time.time()
+        while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
             if rew.is_crossed() and time.time() > start + wait/10:  # if rat crosses rewarder beam, deliver taste
-                lines[line].kill_tone()
                 rew_run.value = 0
-                lines[0].deliver()
+                lines[line].deliver()
                 print("reward delivered")
                 state = 0
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0
-                lines[line].kill_tone()
                 rew_run.value = 0
                 state = 0
 
-    trig.kill_tone()  # kill any lingering tones after task is over
-    lines[line].kill_tone()
-    an_int = 8
-    trig.play_tone(an_int.to_bytes(2, 'big'))
+    base.play_cue()  # kill any lingering cues after task is over
+    end.play_cue()
     recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
     rew_flash.join()
     trig_flash.join()
@@ -402,20 +364,22 @@ if __name__=="__main__":
     tastes = json.loads(config.get("tastelines", "tastes"))  # load taste labels into list
 
     ## initialize objects used in task:
-    # initialize tastelines w/tones
+    # initialize tastelines w/cues
     tasteouts = [31, 33, 35, 37]  # GPIO pin outputs to taste valves. Opens the valve while "1" is emitted from GPIO,
     # closes automatically with no voltage/ "0"
     intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
     # signal to separate device while "1" is emitted.
-    tones = ["1000hz_sine.wav", "3000hz_square.wav", "5000hz_saw.wav", "7000hz_unalias.wav"]  # filenames of tones
-    # initialize taste-tone objects:
-    lines = [TasteToneLine(tasteouts[i], intanouts[i], tones[i], opentimes[i], tastes[i]) for i in range(4)]
-
+    # initialize taste-cue objects:
+    sigs = [0,1,2,3]
+    lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i]) for i in range(4)]
+    base = Cue(5)
+    end = Cue(6)
+    
     # initialize nosepokes:
     rew = NosePoke(36, 11)  # initialize "reward" nosepoke. "Rew" uses GPIO pins 38 as output for the light, and 11 as
     # input for the IR sensor. For the light, 1 = On, 0 = off. For the sensor, 1 = uncrossed, 0 = crossed.
-    trig = Trigger(38, 13, "pink_noise.wav")  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
-    # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a tone.
+    trig = Trigger(38, 13, 4)  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
+    # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a cue.
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
 
