@@ -47,8 +47,6 @@ class NosePoke:
     def flash_off(self):  # turn the light off
         GPIO.output(self.light, 0)
 
-    
-
     def flash(self, hz, run):  # bink on and of at frequency hz (LED has physical limit of 3.9)
         print("flashing "+str(self.light)+" start")
         while time.time() < self.endtime:
@@ -326,11 +324,11 @@ def cuedtaste():
                 rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 start = time.time()
+                base.play_cue()
                 state = 2
                 
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
-            base.play_cue()
             if rew.is_crossed() and time.time() > start + wait/10:  # if rat crosses rewarder beam, deliver taste
                 rew_run.value = 0
                 lines[line].deliver()
