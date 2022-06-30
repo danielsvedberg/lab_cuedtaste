@@ -210,13 +210,11 @@ while not done:
                     done = True
                     
             if signal == 4 and in_flag == 0: #trigger open cue
-                pg.mixer.stop()
-                cue = cues[signal]
                 pause_play(signal)
+                cue = cues[signal]
                 in_flag = 1
                     
             if signal in cnums and in_flag == 0: #taste-offer cue
-                pg.mixer.stop()
                 cue = cues[signal]
                 pause_play(signal)
                 GPIO.output(pins[signal],1)
@@ -248,7 +246,7 @@ while not done:
             old_ID = sig_ID  # exchanges old ID value 
 
             # Limit to 60 frames per second
-            clock.tick(20)
+            clock.tick(60)
 
             if signal != 6 and signal != 7 and time.time() >= now + 2:
                 signal = 5

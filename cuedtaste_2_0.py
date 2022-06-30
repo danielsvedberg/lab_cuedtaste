@@ -105,6 +105,11 @@ class Cue:
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
         print("playing "+str(self.signal))
         self.cuestate = False
+    def is_playing(self):
+        if self.cuestate == True:
+            return True
+        else:
+            return False
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
@@ -210,7 +215,7 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
             for item in lines:
                 data.append(item.is_open())
             for item in lines:
-                data.append(item.cuestate)
+                data.append(item.is_playing())
             if any(i == True for i in data):
                 [str(i) for i in data]
                 t = [str(round(time.time() - starttime, 3))]
