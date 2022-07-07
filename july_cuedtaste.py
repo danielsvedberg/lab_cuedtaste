@@ -9,6 +9,7 @@ Created on Mon Sep  9 14:15:36 2019
 """
 
 #TODO: log cues in csv
+from selectors import EpollSelector
 import time
 import multiprocessing as mp
 import RPi.GPIO as GPIO
@@ -85,7 +86,8 @@ class NosePoke:
 
 # cue is a class that controls playback of a specific file. I imagine this class will be changed so that play_cue
 class Cue:
-    def __init__(self, signal): # added "pin"
+    
+    def __init__(self, signal): 
         self.signal = signal.to_bytes(2,'big')
         self.cuestate = False
 
