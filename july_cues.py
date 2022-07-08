@@ -78,17 +78,12 @@ class Block(pg.sprite.Sprite):
         elif self.speed_x > 0 and self.rect.right >= self.origin_x + self.width*2:
             self.rect.right = self.origin_x
 
-        # if self.speed_y < 0 and self.rect.left <= self.origin_y - self.width*2:
-        #     self.rect.left = self.origin_y
-        # elif self.speed_y > 0 and self.rect.right >= self.origin_y + self.width*2:
-        #     self.rect.right = self.origin_y
-
 # blocket is now modified to make a large block pass through the screen very fast to appear as flashing, rather than many bars moving
 def Blockset(number, speed_x, speed_y, cue=None):  # instead of number of blocks, number now determines how long block is, which you modulate to change frequency
     spritelist = pg.sprite.Group()
-    # width = screen_w*(number*10)
-    width = screen_w
-    for i in range(2):
+    width = screen_w*(number*10)
+    # width = screen_w
+    for i in range(12):
         if cue != None:
             # This represents a block
             block = Block(cue, width, speed_x, speed_y)
@@ -167,9 +162,9 @@ def pause_play(num):
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
 cue_0 = Blockset(1,-500,0, image_dict[1]) #smaller value for "number" = faster flashing
-cue_1 = Blockset(1,100,0, image_dict[2]) #bare minimum speed needed for flashing is 1000
+cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 cue_2 = Blockset(1,-100,0, image_dict[3])
-cue_3 = Blockset(1,100,0, image_dict[4])
+cue_3 = Blockset(1,-100,0, image_dict[4])
 cue_4 = Blockset(1,1,0)
 cue_5 = Blockset(0,0,0)
 
