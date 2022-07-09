@@ -233,15 +233,6 @@ while not done:
                 in_flag = 1
                     
             if signal in cnums and in_flag == 0: #taste-offer cue
-                if len(played_nums) == 4:
-                    played_nums = []
-
-                if signal in played_nums:
-                    print('old sig', signal)
-                    signal = int(random.choice([i for i in cnums if i not in played_nums]))
-                    print ('new sig', signal)
-            
-                played_nums.append(signal)
                 cue = cues[signal]
                 pause_play(signal)
                 GPIO.output(pins[signal],1)

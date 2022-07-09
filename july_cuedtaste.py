@@ -278,7 +278,22 @@ def system_report():
 
 
 ### SECTION 3: BEHAVIORAL TASK PROGRAMS ###
+used_lines = []
+def generate_sig(used_lines):
+    print('used:', used_lines, "len", len(used_lines))
+    signal = random.randint(0,3)
+    
+    if len(used_lines) == 4:
+        used_lines.clear()
 
+    if signal in used_lines:
+        print('old sig', signal)
+        signal = int(random.choice([i for i in [0,1,2,3] if i not in used_lines]))
+        print ('new sig', signal)
+    
+    used_lines.append(signal)
+    return signal
+    
 ##cuedtaste is the central function that runs the behavioral task.
 def cuedtaste():
     anID = str(input("enter animal ID: "))
@@ -316,13 +331,15 @@ def cuedtaste():
             rew_keep_out.join()
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             trig_run.value = 1
-            line = random.randint(0,3)  # select random taste
+            # line = random.randint(0,3)  # select random taste
+            line = generate_sig(used_lines)
             trig.play_cue() 
             state = 1
             print("new trial")
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
+                 # block trials
                 lines[line].play_cue()  # taste-associated cue cue is played
                 trig_run.value = 2  # trigger light goes from blinking to just on
                 trig_run.value = 0
