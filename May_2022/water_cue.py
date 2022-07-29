@@ -161,7 +161,7 @@ def pause_play(num):
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-cue_0 = Blockset(1,-500,0, image_dict[1]) #smaller value for "number" = faster flashing
+cue_0 = Blockset(1,-100,0, image_dict[3]) #smaller value for "number" = faster flashing
 cue_1 = Blockset(1,100,0, image_dict[4])  #bare minimum speed needed for flashing is 1000
 # cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 cue_2 = Blockset(1,-100,0, image_dict[3])

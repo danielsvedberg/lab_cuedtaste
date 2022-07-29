@@ -24,7 +24,7 @@ import time
 import multiprocessing as mp
 import socket
 import random
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
 # Define some colors
 BLACK = (0,   0,   0)
@@ -127,9 +127,13 @@ audio_dict = {0: "3000hz_sine.wav",
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
 
-pins = [22,23,24,25]
-for pin in pins:
-    GPIO.setup(pin, GPIO.out)
+# pins = [11,13,15,16]
+# for pin in pins:
+#     GPIO.setwarnings(False)
+#     GPIO.cleanup() #turn off any GPIO pins that might be on
+#     GPIO.setmode(GPIO.BOARD)
+#     for pin in pins:
+#         GPIO.setup(pin, GPIO.OUT)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
 # if the signal is 0, the pink noise will play until the animal begins the next trial
 # pink noise indicates the ability to start the next trial
@@ -215,13 +219,13 @@ while not done:
             if signal in cnums and in_flag == 1: #taste-offer cue
                 cue = cues[signal]
                 pause_play(signal)
-                GPIO.output(pins[signal],1)
-                last_pin = pins[signal]
+                # GPIO.output(pins[signal],1)
+                # last_pin = pins[signal]
                 cueend = time.time() + 1
                 in_flag = 2
 
             if signal == 5 and in_flag == 2 and time.time() > cueend:  # stop cues/"blank" cue
-                GPIO.output(last_pin,0)
+                # GPIO.output(last_pin,0)
                 pg.mixer.stop()
                 screen.fill(BLACK)
                 in_flag = 0

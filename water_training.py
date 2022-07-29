@@ -275,23 +275,23 @@ def system_report():
 
 
 ### SECTION 3: BEHAVIORAL TASK PROGRAMS ###
-used_lines = []
-def generate_sig(used_lines):
-    print('used:', used_lines, "len", len(used_lines))
+# used_lines = []
+def generate_sig():
+    # print('used:', used_lines, "len", len(used_lines))
     # signal = random.randint(0,3) ### use for all four tastes
-    signal = random.randint(0,1)
+    signal = 0
     
     # if len(used_lines) == 4: ### use for all four tastes
-    if len(used_lines) == 2:
-        used_lines.clear()
+    # if len(used_lines) == 2:
+    #     used_lines.clear()
 
-    if signal in used_lines:
-        print('old sig', signal)
-        # signal = int(random.choice([i for i in [0,1,2,3] if i not in used_lines])) ### use for all four tastes
-        signal = int(random.choice([i for i in [0,1] if i not in used_lines]))
-        print ('new sig', signal)
+    # if signal in used_lines:
+    #     print('old sig', signal)
+    #     # signal = int(random.choice([i for i in [0,1,2,3] if i not in used_lines])) ### use for all four tastes
+    #     signal = int(random.choice([i for i in [0,1] if i not in used_lines]))
+    #     print ('new sig', signal)
     
-    used_lines.append(signal)
+    # used_lines.append(signal)
     return signal
     
 ##cuedtaste is the central function that runs the behavioral task.
@@ -305,7 +305,7 @@ def cuedtaste():
     iti = 5  # inter-trial-interval
     wait = 1  # how long rat has to poke trigger to activate
     Hz = 3.9  # poke lamp flash frequency
-    crosstime = 5  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
+    crosstime = 10  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
 
     # setting up parallel multiprocesses for light flashing and data logging
     rew_run = mp.Value("i", 0)
@@ -332,7 +332,7 @@ def cuedtaste():
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             trig_run.value = 1
             # line = random.randint(0,3)  # select random taste
-            line = generate_sig(used_lines)
+            line = generate_sig()
             trig.play_cue() 
             state = 1
             print("new trial")
