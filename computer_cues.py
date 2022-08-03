@@ -35,13 +35,15 @@ RED = (255,   0,   0)
 screen_w = 800
 screen_h = 480
 
+image_dict = {1: 'checker.png', 2: 'black_polka.jpeg', 3: 'left_slant.jpeg', 4: 'right_slant.jpeg'}
+
 class Block(pg.sprite.Sprite):
     """
     This class represents the ball.
     It derives from the "Sprite" class in pg.
     """
 
-    def __init__(self, color, width, speed):
+    def __init__(self, color, width, speed_x, speed_y):
         """ Constructor. Pass in the color of the block,
         and its size. """
 
@@ -52,9 +54,15 @@ class Block(pg.sprite.Sprite):
         # This could also be an image loaded from the disk.
         self.width = width
         self.height = screen_h
-        self.image = pg.Surface([width, self.height])
-        self.speed = speed
-        self.image.fill(color)
+        # self.image = pg.Surface([width, self.height])
+        if color != BLACK:
+            self.image = pg.transform.scale(color, (self.width, screen_h))
+            screen.blit(color, (width, self.height))
+        else: 
+            self.image = pg.Surface([width, self.height])
+            self.image.fill(color)
+        self.speed_x = speed_x
+        self.speed_y = speed_y
 
         # Update the position of this object by setting the values
         # of rect.x and rect.y
@@ -64,19 +72,23 @@ class Block(pg.sprite.Sprite):
 
     # if self.speed is positive, blocks move right, and if it's negative, blocks move left
     def update(self):
-        self.rect = self.rect.move(self.speed, 0)
-        if self.speed < 0 and self.rect.left <= self.origin_x - self.width*2:
+        self.rect = self.rect.move(self.speed_x, self.speed_y)
+        if self.speed_x < 0 and self.rect.left <= self.origin_x - self.width*2:
             self.rect.left = self.origin_x
-        elif self.speed > 0 and self.rect.right >= self.origin_x + self.width*2:
+        elif self.speed_x > 0 and self.rect.right >= self.origin_x + self.width*2:
             self.rect.right = self.origin_x
 
 # blocket is now modified to make a large block pass through the screen very fast to appear as flashing, rather than many bars moving
-def Blockset(number, speed):  # instead of number of blocks, number now determines how long block is, which you modulate to change frequency
+def Blockset(number, speed_x, speed_y, cue=None):  # instead of number of blocks, number now determines how long block is, which you modulate to change frequency
     spritelist = pg.sprite.Group()
     width = screen_w*(number*10)
-    for i in range(2):
-        # This represents a block
-        block = Block(BLACK, width, speed)
+    # width = screen_w
+    for i in range(12):
+        if cue != None:
+            # This represents a block
+            block = Block(cue, width, speed_x, speed_y)
+        else:
+            block = Block(BLACK, width, speed_x, speed_y)
         # Set location for the block
         block.rect.x = width*2*i
         block.rect.y = 0
@@ -100,6 +112,10 @@ def load_sound(file):
 # Initialize Pygame
 pg.init()
 
+# iterates through the dictionary to load the image-values that correspond to the keys
+for key, value in image_dict.items():
+    image_dict[key] = pg.image.load(value)
+
 UDP_IP = "10.0.0.115"
 # UDP_IP = "172.20.186.173"
 UDP_PORT = 5005
@@ -117,7 +133,6 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-
 audio_dict = {0: "3000hz_square.wav",
               1: "5000hz_saw.wav", 
               2: "7000hz_unalias.wav", 
@@ -127,13 +142,12 @@ audio_dict = {0: "3000hz_square.wav",
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
 
-# pins = [11,13,15,16]
+pins = [11,13,15,16]
+# GPIO.setwarnings(False)
+# GPIO.cleanup() #turn off any GPIO pins that might be on
+# GPIO.setmode(GPIO.BOARD)
 # for pin in pins:
-#     GPIO.setwarnings(False)
-#     GPIO.cleanup() #turn off any GPIO pins that might be on
-#     GPIO.setmode(GPIO.BOARD)
-#     for pin in pins:
-#         GPIO.setup(pin, GPIO.OUT)
+    # GPIO.setup(pin, GPIO.OUT)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
 # if the signal is 0, the pink noise will play until the animal begins the next trial
 # pink noise indicates the ability to start the next trial
@@ -147,13 +161,13 @@ def pause_play(num):
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-
-cue_0 = Blockset(1.25,-1000) #smaller value for "number" = faster flashing
-cue_1 = Blockset(1.35,-1000) #bare minimum speed needed for flashing is 1000
-cue_2 = Blockset(1.75,-1000)
-cue_3 = Blockset(2,-1000)
-cue_4 = Blockset(1,1)
-cue_5 = Blockset(0,0)
+cue_0 = Blockset(1,-500,0, image_dict[1]) #smaller value for "number" = faster flashing
+cue_1 = Blockset(1,100,0, image_dict[4])  #bare minimum speed needed for flashing is 1000
+# cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
+cue_2 = Blockset(1,-100,0, image_dict[3])
+cue_3 = Blockset(1,-100,0, image_dict[4])
+cue_4 = Blockset(1,1,0)
+cue_5 = Blockset(0,0,0)
 
 cues = [cue_0,cue_1,cue_2,cue_3,cue_4,cue_5]
 
@@ -175,7 +189,9 @@ clock.tick(60)
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
-    
+played_nums = []
+
+# -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
     clock = pg.time.Clock()
@@ -186,6 +202,7 @@ while not done:
     if data:
         # send this to function that initiates tone/replace keyboard values
         signal = int.from_bytes(data, "big", signed="True")
+
         # sets up a unique ID for each value received 
         sig_ID = sig_ID + 1
         print("received message:", signal, "ID", sig_ID)
@@ -212,22 +229,23 @@ while not done:
                     done = True
                     
             if signal == 4 and in_flag == 0: #trigger open cue
-                cue = cues[signal]
                 pause_play(signal)
+                cue = cues[signal]
                 in_flag = 1
                     
-            if signal in cnums and in_flag == 1: #taste-offer cue
+            if signal in cnums and in_flag == 0: #taste-offer cue
                 cue = cues[signal]
                 pause_play(signal)
                 # GPIO.output(pins[signal],1)
-                # last_pin = pins[signal]
+                last_pin = pins[signal]
                 cueend = time.time() + 1
-                in_flag = 2
+                in_flag = 1
 
-            if signal == 5 and in_flag == 2 and time.time() > cueend:  # stop cues/"blank" cue
+            if signal == 5 and in_flag == 0 and time.time() > cueend:  # stop cues/"blank" cue
                 # GPIO.output(last_pin,0)
                 pg.mixer.stop()
                 screen.fill(BLACK)
+                pg.display.flip()
                 in_flag = 0
                 break 
 
@@ -248,7 +266,7 @@ while not done:
             old_ID = sig_ID  # exchanges old ID value 
 
             # Limit to 60 frames per second
-            clock.tick(20)
+            clock.tick(60)
 
             if signal != 6 and signal != 7 and time.time() >= now + 2:
                 signal = 5

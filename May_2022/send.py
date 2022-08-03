@@ -3,7 +3,7 @@ import random
 
 def send_tone(value):
     
-    UDP_IP = "172.20.186.173"
+    UDP_IP = "10.0.0.115"
     UDP_PORT = 5005
 
     MESSAGE = value

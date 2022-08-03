@@ -341,6 +341,8 @@ def cuedtaste():
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                  # block trials
                 lines[line].play_cue()  # taste-associated cue cue is played
+                lines[3].deliver()
+                print("trigger activated")
                 trig_run.value = 2  # trigger light goes from blinking to just on
                 trig_run.value = 0
                 rew_run.value = 1
