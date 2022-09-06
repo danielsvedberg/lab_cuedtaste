@@ -305,7 +305,7 @@ def cuedtaste():
     iti = 5  # inter-trial-interval
     wait = 1  # how long rat has to poke trigger to activate
     Hz = 3.9  # poke lamp flash frequency
-    crosstime = 5  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
+    crosstime = 10  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
 
     # setting up parallel multiprocesses for light flashing and data logging
     rew_run = mp.Value("i", 0)

@@ -35,7 +35,8 @@ RED = (255,   0,   0)
 screen_w = 800
 screen_h = 480
 
-image_dict = {1: 'checker.png', 2: 'black_polka.jpeg', 3: 'left_slant.jpeg', 4: 'right_slant.jpeg'}
+image_dict = {1: 'checker.png', 
+                4: 'right_slant.jpeg'}
 
 class Block(pg.sprite.Sprite):
     """
@@ -133,11 +134,10 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-audio_dict = {0: "3000hz_square.wav",
-              1: "5000hz_saw.wav", 
-              2: "7000hz_unalias.wav", 
-              3: "9000hz_sine.wav",
-              4: "pink_noise.wav"}
+audio_dict = {0: "5000hz_saw.wav",      # sucrose cue
+              1: "9000hz_sine.wav",     # quinine cue
+              4: "pink_noise.wav"}      # trigger available
+
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
@@ -161,15 +161,16 @@ def pause_play(num):
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-cue_0 = Blockset(1,-100,0, image_dict[1]) #smaller value for "number" = faster flashing
+"""
+Cues 0 and 1 indicate sucrose and quinine, respectively. Cue 4 plays pink noise to indicate that the trigger is ready 
+for the next trial. Cue 5 stops everything and indicates the waiting period.
+"""
+cue_0 = Blockset(1,-500,0, image_dict[1]) #smaller value for "number" = faster flashing
 cue_1 = Blockset(1,100,0, image_dict[4])  #bare minimum speed needed for flashing is 1000
-# cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
-cue_2 = Blockset(1,-100,0, image_dict[3])
-cue_3 = Blockset(1,-100,0, image_dict[4])
 cue_4 = Blockset(1,1,0)
 cue_5 = Blockset(0,0,0)
 
-cues = [cue_0,cue_1,cue_2,cue_3,cue_4,cue_5]
+cues = [cue_0,cue_1,cue_4,cue_5]
 
 # Loop until the user clicks the close button.
 done = False
@@ -188,8 +189,7 @@ pg.display.flip()
 clock.tick(60)
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
-cnums = [0,1,2,3]
-played_nums = []
+cnums = [0,1]
 
 # -------- Main Program Loop -----------
 while not done:
@@ -268,7 +268,7 @@ while not done:
             # Limit to 60 frames per second
             clock.tick(60)
 
-            if signal != 6 and signal != 7 and time.time() >= now + 2:
+            if signal != 6 and time.time() >= now + 2:
                 signal = 5
                 print('true')
                 break
