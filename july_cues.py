@@ -25,7 +25,7 @@ import multiprocessing as mp
 import socket
 import random
 import RPi.GPIO as GPIO
-
+import serial
 # Define some colors
 BLACK = (0,   0,   0)
 WHITE = (255, 255, 255)
@@ -35,7 +35,7 @@ RED = (255,   0,   0)
 screen_w = 800
 screen_h = 480
 
-image_dict = {1: 'checker.png', 2: 'black_polka.jpeg', 3: 'left_slant.jpeg', 4: 'right_slant.jpeg'}
+image_dict = {1: 'vertical.jpeg', 2: 'vertical.jpeg', 3: 'left_slant.jpeg', 4: 'right_slant.jpeg'}
 
 class Block(pg.sprite.Sprite):
     """
@@ -116,15 +116,20 @@ pg.init()
 for key, value in image_dict.items():
     image_dict[key] = pg.image.load(value)
 
-UDP_IP = "129.64.50.48"
-# UDP_IP = "172.20.186.173"
-UDP_PORT = 5005
+#######################################################################
+# UDP_IP = "129.64.50.48"
+# # UDP_IP = "172.20.186.173"
+# UDP_PORT = 5005
 
-sock = socket.socket(socket.AF_INET,  # internet
-                        socket.SOCK_DGRAM)  # UDP
+# sock = socket.socket(socket.AF_INET,  # internet
+#                         socket.SOCK_DGRAM)  # UDP
 
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind((UDP_IP, UDP_PORT))
+# sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# sock.bind((UDP_IP, UDP_PORT))
+
+
+#######################################################################
+ser = serial.Serial('/dev/ttyS0', 9600)
 
 sig_ID = 0  # transfers the unique ID from receive function to main program
 
@@ -133,10 +138,10 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-audio_dict = {0: "3000hz_square.wav",
-              1: "5000hz_saw.wav", 
+audio_dict = {0: "9000hz_sine.wav",
+              1: "20000_square.wav", 
               2: "7000hz_unalias.wav", 
-              3: "9000hz_sine.wav",
+              3: "15000_saw.wav",
               4: "pink_noise.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
@@ -161,12 +166,12 @@ def pause_play(num):
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-cue_0 = Blockset(1,-100,0, image_dict[1]) #smaller value for "number" = faster flashing
-cue_1 = Blockset(1,100,0, image_dict[4])  #bare minimum speed needed for flashing is 1000
+cue_0 = Blockset(1,-80,0, image_dict[1]) #smaller value for "number" = faster flashing
+cue_1 = Blockset(1,80,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 # cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 cue_2 = Blockset(1,-100,0, image_dict[3])
-cue_3 = Blockset(1,-100,0, image_dict[4])
-cue_4 = Blockset(1,1,0)
+cue_3 = Blockset(1,100,0, image_dict[4])
+cue_4 = Blockset(1,0,0)
 cue_5 = Blockset(0,0,0)
 
 cues = [cue_0,cue_1,cue_2,cue_3,cue_4,cue_5]
@@ -198,11 +203,28 @@ while not done:
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
-    data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-    if data:
+    # data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+    signal = ser.read()
+    signal_wait = ser.inWaiting()
+    signal += ser.read(signal_wait)
+    if not signal == 0:
+        ######################## NOT YET TESTED
+        print(signal)
+        data = signal.decode('utf-8', 'ignore')
+        print('data:' + data, type(data))
+        datafr = int(data)
+        print(datafr, type(datafr))
+        ############################
+        ######## TESTED ############
+        #datafr = str(signal)
+        #datafr = int.from_bytes(datafr, "big", signed="True")
         # send this to function that initiates tone/replace keyboard values
-        signal = int.from_bytes(data, "big", signed="True")
+        # signal = int.from_bytes(data, "big", signed="True")
 
+        ###############################
+        #print(f"Received: {datafr}")
+        # converts datafr back to signal var
+        signal = datafr
         # sets up a unique ID for each value received 
         sig_ID = sig_ID + 1
         print("received message:", signal, "ID", sig_ID)
@@ -266,10 +288,10 @@ while not done:
             old_ID = sig_ID  # exchanges old ID value 
 
             # Limit to 60 frames per second
-            clock.tick(60)
+            clock.tick(80)
 
             if signal != 6 and signal != 7 and time.time() >= now + 2:
-                signal = 5
+                signal = str(5).encode('utf-8')
                 print('true')
                 break
 

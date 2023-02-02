@@ -16,7 +16,7 @@ import random
 import configparser
 import json
 import csv
-import serial
+import socket
 
 
 ########################################################################################################################
@@ -62,8 +62,11 @@ class NosePoke:
         print("flashing "+str(self.light)+" start")
 
     def is_crossed(self):  # report if beam is crossed
-        return GPIO.input(self.beam) == 1
-          
+        if GPIO.input(self.beam) == 0:
+            return True
+        else:
+            return False
+
     def keep_out(self, wait):  # report when the animal has stayed out of the nosepoke for duration of [wait] seconds
         print("keep out start")
         start = time.time()
@@ -82,22 +85,29 @@ class NosePoke:
 class Cue:
     
     def __init__(self, signal): 
-        #self.signal = signal.to_bytes(2,'big')
-        self.signal = signal
+        self.signal = signal.to_bytes(2,'big')
         self.cuestate = False
 
     def play_cue(self):
         self.cuestate = True
-        ser = serial.Serial('/dev/ttyS0',9600)
+        UDP_IP = "129.64.50.48"
+        UDP_PORT = 5005
         MESSAGE = self.signal
-        ser.write(str(self.signal).encode('utf-8'))
-        # ser.write(str.encode(str(MESSAGE) + '\n'))
+        print(int.from_bytes(self.signal, 'big'))
+        print("UDP target IP:", UDP_IP)
+        print("UDP target port:", UDP_PORT)
         print("message:", MESSAGE)
-    #     print("playing "+str(self.signal))
+
+        sock = socket.socket(socket.AF_INET, #internet
+                            socket.SOCK_DGRAM) # UDP
+        sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+        print("playing "+str(self.signal))
         self.cuestate = False
-        
     def is_playing(self):
-        return self.cuestate == True
+        if self.cuestate == True:
+            return True
+        else:
+            return False
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
@@ -313,10 +323,12 @@ def cuedtaste():
 
     # this loop controls the task as it happens, when [endtime] is reached, loop exits and task program closes out
     while time.time() <= endtime: 
+
+        last_time = None
         while state == 0 and time.time() <= endtime:  # state 0: 
             rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
             trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
-            rew_keep_out.start()
+            rew_keep_out.start() 
             trig_keep_out.start()
             rew_keep_out.join()
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
@@ -326,7 +338,6 @@ def cuedtaste():
             trig.play_cue() 
             state = 1
             print("new trial")
-            Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
@@ -344,14 +355,22 @@ def cuedtaste():
                 
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
-            if rew.is_crossed() and time.time() > start + wait/10:  # if rat crosses rewarder beam, deliver taste
-                rew_run.value = 0
-                lines[line].deliver()
-                print("reward delivered")
-                state = 0
-            if time.time() > deadline:  # if rat misses reward deadline, return to state 0
-                rew_run.value = 0
-                state = 0
+            if last_time == None and rew.is_crossed():
+                last_time = time.time()
+                # break
+            elif (not last_time == None) and (time.time() - last_time < 0.3 and time.time() - last_time > 2 and rew.is_crossed()):
+                last_time = None
+                # break
+            else: 
+                if rew.is_crossed() and time.time() > start + wait/10:  # if rat crosses rewarder beam, deliver taste
+                    rew_run.value = 0
+                    lines[line].deliver()
+                    print("reward delivered")
+                    state = 0
+                if time.time() > deadline:  # if rat misses reward deadline, return to state 0
+                    rew_run.value = 0
+                    state = 0
+                    last_time = None
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()

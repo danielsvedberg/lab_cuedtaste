@@ -104,7 +104,8 @@ def load_sound(file):
 # Initialize Pygame
 pg.init()
 
-UDP_IP = "172.20.186.173"
+# UDP_IP = "172.20.186.173"
+UDP_IP = "27.0.0.1"
 UDP_PORT = 5005
 
 sock = socket.socket(socket.AF_INET,  # internet

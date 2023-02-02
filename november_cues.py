@@ -35,7 +35,7 @@ RED = (255,   0,   0)
 screen_w = 800
 screen_h = 480
 
-image_dict = {1: 'left_slant.jpeg', 2: 'black_polka.jpeg', 3: 'checker.png', 4: 'right_slant.jpeg'}
+image_dict = {1: 'vertical.jpeg', 2: 'vertical.jpeg', 3: 'left_slant.jpeg', 4: 'right_slant.jpeg'}
 
 class Block(pg.sprite.Sprite):
     """
@@ -133,10 +133,10 @@ signal = 0
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-audio_dict = {0: "3000hz_square.wav",
-              1: "5000hz_saw.wav", 
+audio_dict = {0: "9000hz_sine.wav",
+              1: "20000_square.wav", 
               2: "7000hz_unalias.wav", 
-              3: "9000hz_sine.wav",
+              3: "15000_saw.wav",
               4: "pink_noise.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
@@ -161,11 +161,11 @@ def pause_play(num):
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-cue_0 = Blockset(1,-100,0, image_dict[3]) #smaller value for "number" = faster flashing
-cue_1 = Blockset(1,100,0, image_dict[4])  #bare minimum speed needed for flashing is 1000
+cue_0 = Blockset(1,-30,0, image_dict[1]) #smaller value for "number" = faster flashing
+cue_1 = Blockset(1,30,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 # cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 cue_2 = Blockset(1,-100,0, image_dict[3])
-cue_3 = Blockset(1,-100,0, image_dict[4])
+cue_3 = Blockset(1,100,0, image_dict[4])
 cue_4 = Blockset(1,0,0)
 cue_5 = Blockset(0,0,0)
 
@@ -266,7 +266,7 @@ while not done:
             old_ID = sig_ID  # exchanges old ID value 
 
             # Limit to 60 frames per second
-            clock.tick(60)
+            clock.tick(80)
 
             if signal != 6 and signal != 7 and time.time() >= now + 2:
                 signal = 5
