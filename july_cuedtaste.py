@@ -91,10 +91,10 @@ class Cue:
         ser = serial.Serial('/dev/ttyS0',9600)
         MESSAGE = self.signal
         ser.write(str(self.signal).encode('utf-8'))
-        # ser.write(str.encode(str(MESSAGE) + '\n'))
-        print("message:", MESSAGE)
+        print("message:", MESSAGE, type(MESSAGE))
     #     print("playing "+str(self.signal))
         self.cuestate = False
+        ser.close()
         
     def is_playing(self):
         return self.cuestate == True
