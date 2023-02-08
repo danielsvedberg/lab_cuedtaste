@@ -129,8 +129,9 @@ for key, value in image_dict.items():
 
 
 #######################################################################
-ser = serial.Serial('/dev/ttyS0', 9600)
-
+ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+ser.flushInput()
+ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
 
 signal = 0
@@ -204,16 +205,24 @@ while not done:
     old_ID = sig_ID  # dec. 2021
 
     # data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-    signal = ser.read()
-    signal_wait = ser.inWaiting()
-    signal += ser.read(signal_wait)
-    if not signal == 0:
+    #signal = ser.read()
+    #signal_wait = ser.inWaiting()
+    #signal += ser.read(signal_wait)
+    if ser.in_waiting > 0:
         ######################## NOT YET TESTED
-        print(signal)
-        data = signal.decode('utf-8', 'ignore')
-        print('data:' + data, type(data))
-        datafr = int(data)
-        print(datafr, type(datafr))
+        received = ser.read(1).decode('utf-8', 'ignore')
+
+        if received in ["1", "2", "3", "4", "5", "6"]:
+            print(received, type(received))
+            signal = int(received)
+            ser.write(received.encode('utf-8'))
+        ser.close
+        ###########################################
+        # print(signal)
+        # data = signal.decode('utf-8', 'ignore')
+        # print('data:' + data, type(data))
+        # datafr = int(data)
+        # print(datafr, type(datafr))
         ############################
         ######## TESTED ############
         #datafr = str(signal)
@@ -224,7 +233,7 @@ while not done:
         ###############################
         #print(f"Received: {datafr}")
         # converts datafr back to signal var
-        signal = datafr
+
         # sets up a unique ID for each value received 
         sig_ID = sig_ID + 1
         print("received message:", signal, "ID", sig_ID)

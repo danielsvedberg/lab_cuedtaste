@@ -103,6 +103,7 @@ class Cue:
         sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
         print("playing "+str(self.signal))
         self.cuestate = False
+   
     def is_playing(self):
         if self.cuestate == True:
             return True

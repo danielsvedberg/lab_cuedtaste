@@ -82,19 +82,32 @@ class NosePoke:
 class Cue:
     
     def __init__(self, signal): 
-        #self.signal = signal.to_bytes(2,'big')
         self.signal = signal
         self.cuestate = False
 
     def play_cue(self):
-        self.cuestate = True
-        ser = serial.Serial('/dev/ttyS0',9600)
-        MESSAGE = self.signal
-        ser.write(str(self.signal).encode('utf-8'))
-        print("message:", MESSAGE, type(MESSAGE))
-    #     print("playing "+str(self.signal))
-        self.cuestate = False
+        #self.cuestate = False
+        check = False
+        ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+        ser.flushInput()
+        ser.flushOutput()
+        MESSAGE = str(self.signal).encode('utf-8')
+        print('raw', str(self.signal).encode('utf-8'))
+        
+        #while not check:
+
+        ser.write(MESSAGE)
+        time.sleep(0.001)
+        received = ser.read(1)
+        # while not received == MESSAGE:
+        #     ser.write(MESSAGE)
+        #     time.sleep(0.001)
+        #     received = ser.read(1)
+            
+        time.sleep(0.7)
         ser.close()
+        print("message:", MESSAGE, type(MESSAGE))
+        check = False
         
     def is_playing(self):
         return self.cuestate == True
@@ -326,7 +339,7 @@ def cuedtaste():
             trig.play_cue() 
             state = 1
             print("new trial")
-            Cue(4).play_cue()
+            #Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
@@ -398,7 +411,7 @@ if __name__=="__main__":
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
 
-    # This loop executes the main menu and menu-options
+ # This loop executes the main menu and menu-options
     while True:
         ## While loop which will keep going until loop = False
         system_report()  # Displays valve opentimes and taste-line assignments
