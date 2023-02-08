@@ -89,8 +89,7 @@ class Cue:
         #self.cuestate = False
         check = False
         ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
-        ser.flushInput()
-        ser.flushOutput()
+        
         MESSAGE = str(self.signal).encode('utf-8')
         print('raw', str(self.signal).encode('utf-8'))
         
@@ -410,7 +409,9 @@ if __name__=="__main__":
     # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a cue.
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
-
+	# flush input and output of serial
+	ser.flushInput()
+    ser.flushOutput()
  # This loop executes the main menu and menu-options
     while True:
         ## While loop which will keep going until loop = False
