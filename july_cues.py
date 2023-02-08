@@ -196,27 +196,21 @@ clock.tick(60)
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
 played_nums = []
-
+clock = pg.time.Clock() # Moved out of while loop
 # -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
-    clock = pg.time.Clock()
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
-    # data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-    #signal = ser.read()
-    #signal_wait = ser.inWaiting()
-    #signal += ser.read(signal_wait)
-    if ser.in_waiting > 0:
+    while ser.in_waiting > 0:
         ######################## NOT YET TESTED
         received = ser.read(1).decode('utf-8', 'ignore')
-
         if received in ["1", "2", "3", "4", "5", "6"]:
             print(received, type(received))
             signal = int(received)
             ser.write(received.encode('utf-8'))
-        ser.close
+        
         ###########################################
         # print(signal)
         # data = signal.decode('utf-8', 'ignore')
@@ -303,5 +297,5 @@ while not done:
                 signal = str(5).encode('utf-8')
                 print('true')
                 break
-
+ser.close()
 pg.quit()
