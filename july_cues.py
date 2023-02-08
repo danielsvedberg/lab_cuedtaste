@@ -203,14 +203,9 @@ while not done:
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
-    # data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-    #signal = ser.read()
-    #signal_wait = ser.inWaiting()
-    #signal += ser.read(signal_wait)
-    if ser.in_waiting > 0:
+    while ser.in_waiting > 0:
         ######################## NOT YET TESTED
         received = ser.read(1).decode('utf-8', 'ignore')
-
         if received in ["1", "2", "3", "4", "5", "6"]:
             print(received, type(received))
             signal = int(received)

@@ -93,18 +93,14 @@ class Cue:
         MESSAGE = str(self.signal).encode('utf-8')
         print('raw', str(self.signal).encode('utf-8'))
         
-        #while not check:
-
         ser.write(MESSAGE)
         time.sleep(0.001)
         received = ser.read(1)
-        # while not received == MESSAGE:
-        #     ser.write(MESSAGE)
-        #     time.sleep(0.001)
-        #     received = ser.read(1)
+        while not received == MESSAGE:
+            ser.write(MESSAGE)
+            time.sleep(0.001)
+            received = ser.read(1)
             
-        time.sleep(0.7)
-        ser.close()
         print("message:", MESSAGE, type(MESSAGE))
         check = False
         
