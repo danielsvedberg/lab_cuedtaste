@@ -81,15 +81,15 @@ class NosePoke:
 # cue is a class that controls playback of a specific file. I imagine this class will be changed so that play_cue
 class Cue:
     
-    def __init__(self, signal): 
+    def __init__(self, signal, ser): 
         self.signal = signal
         self.cuestate = False
+        self.ser = ser
 
     def play_cue(self):
         #self.cuestate = False
         check = False
-        ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
-        
+
         MESSAGE = str(self.signal).encode('utf-8')
         print('raw', str(self.signal).encode('utf-8'))
         
@@ -187,9 +187,9 @@ class TasteLine:
 
 # TastecueLine allows for a cue to be associated with a corresponding TasteLine
 class TasteCueLine(TasteLine, Cue):
-    def __init__(self, valve, intanOut, opentime, taste, signal):
+    def __init__(self, valve, intanOut, opentime, taste, signal, ser):
         TasteLine.__init__(self, valve, intanOut, opentime, taste)
-        Cue.__init__(self, signal)
+        Cue.__init__(self, signal, ser)
 
 
 ### SECTION 2: MISC. FUNCTIONS
@@ -294,12 +294,14 @@ def generate_sig(used_lines):
     
 ##cuedtaste is the central function that runs the behavioral task.
 def cuedtaste():
+
     anID = str(input("enter animal ID: "))
     runtime = int(input("enter runtime in minutes: "))
     starttime = time.time()  # start of task
     endtime = starttime + runtime * 60  # end of task
     rew.endtime = endtime
     trig.endtime = endtime
+    
     iti = 5  # inter-trial-interval
     wait = 1  # how long rat has to poke trigger to activate
     Hz = 3.9  # poke lamp flash frequency
@@ -393,10 +395,14 @@ if __name__=="__main__":
     intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
-    sigs = [0,1,2,3]
-    lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i]) for i in range(4)]
-    base = Cue(5)
-    end = Cue(6)
+    ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+    ser.flushInput()
+    ser.flushOutput()
+    
+    sigs = [0,1,2,3] #TODO: what is going on here? Why is it 0-3 and then 5,6?
+    lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i], ser) for i in range(4)]
+    base = Cue(5, ser)
+    end = Cue(6, ser)
     
     # initialize nosepokes:
     rew = NosePoke(36, 11)  # initialize "reward" nosepoke. "Rew" uses GPIO pins 38 as output for the light, and 11 as
@@ -406,8 +412,7 @@ if __name__=="__main__":
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
 	# flush input and output of serial
-	ser.flushInput()
-    ser.flushOutput()
+
  # This loop executes the main menu and menu-options
     while True:
         ## While loop which will keep going until loop = False
