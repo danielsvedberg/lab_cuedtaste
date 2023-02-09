@@ -134,8 +134,6 @@ ser.flushInput()
 ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
 
-signal = 0
-
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
@@ -155,7 +153,7 @@ GPIO.setmode(GPIO.BOARD)
 for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
-# if the signal is 0, the pink noise will play until the animal begins the next trial
+# if the signal is 5, the pink noise will play until the animal begins the next trial
 # pink noise indicates the ability to start the next trial
 # @run_once
 def pause_play(num):
@@ -183,8 +181,6 @@ done = False
 # Used to manage how fast the screen updates
 clock = pg.time.Clock()
 # pause_play(0)  # to play white noise in the beginning
-old_value = signal
-old_ID = sig_ID  # dec. 2021
 
 screen.fill(WHITE)
 cue = cue_5
@@ -192,6 +188,10 @@ cue.update()
 cue.draw(screen)
 pg.display.flip()
 clock.tick(60)
+signal = 5 #this sets the base signal. Changed from 0 because signal for 0 was changed to a sine wave and blocks, which is not what we want
+old_value = signal
+old_ID = sig_ID  # dec. 2021
+
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
