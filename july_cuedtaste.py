@@ -87,31 +87,27 @@ class Cue:
         self.ser = ser
 
     def play_cue(self):
-        #self.cuestate = False
-        check = False
-
+        self.cuestate = True #changing cuestate hopefully will get caught by the record system
         MESSAGE = str(self.signal).encode('utf-8')
         print('raw', str(self.signal).encode('utf-8'))
         
-        ser.write(MESSAGE)
         time.sleep(0.001)
         received = ser.read(1)
         while not received == MESSAGE:
             ser.write(MESSAGE)
             time.sleep(0.001)
             received = ser.read(1)
-            
         print("message:", MESSAGE, type(MESSAGE))
-        check = False
+        self.cuestate = False
         
     def is_playing(self):
-        return self.cuestate == True
+        return self.cuestate #TODO: change this so that it doesn't automatically return false
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
-    def __init__(self, light, beam, signal):
+    def __init__(self, light, beam, signal, ser):
         NosePoke.__init__(self, light, beam)
-        Cue.__init__(self, signal)
+        Cue.__init__(self, signal, ser)
 
 
 # class TasteLine controls an individual taste-valve and its associated functions: clearouts,
