@@ -206,7 +206,7 @@ while not done:
     while ser.in_waiting > 0:
         ######################## NOT YET TESTED
         received = ser.read(1).decode('utf-8', 'ignore')
-        if received in ["1", "2", "3", "4", "5", "6"]:
+        if received in ["0","1", "2", "3", "4", "5", "6"]:
             print(received, type(received))
             signal = int(received)
             ser.write(received.encode('utf-8'))
