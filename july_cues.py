@@ -274,9 +274,9 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 6 and signal != 7 and time.time() >= now + 2:
-        signal = str(5).encode('utf-8')
-        print('true')
-        break
+    #if signal != 6 and signal != 7 and time.time() >= now + 2:
+     #   signal = str(5).encode('utf-8')
+      #  print('true')
+       # break
 ser.close()
 pg.quit()
