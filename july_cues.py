@@ -275,7 +275,7 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 6 and signal != 7 and now:
+    if signal != 6 and signal != 7 and now in locals():
         if time.time() >= now + 2:
             signal = 5
             print('true')
