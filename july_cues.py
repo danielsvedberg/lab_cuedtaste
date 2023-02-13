@@ -133,7 +133,7 @@ ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
 ser.flushInput()
 ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
-cueend = None
+cueend = 10
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
@@ -275,7 +275,7 @@ while not done:
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
     if signal != 6 and signal != 7 and time.time() >= now + 2:
-       signal = str(5).encode('utf-8')
+       signal = 5
        print('true')
        break
     
