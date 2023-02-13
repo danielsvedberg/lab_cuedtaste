@@ -242,7 +242,7 @@ while not done:
     if signal in cnums and in_flag == 0: #taste-offer cue
         cue = cues[signal]
         pause_play(signal)
-        # GPIO.output(pins[signal],1)
+        GPIO.output(pins[signal],1)
         last_pin = pins[signal]
         cueend = time.time() + 1
         in_flag = 1
@@ -275,9 +275,10 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 6 and signal != 7 and time.time() >= now + 2:
-       signal = 5
-       print('true')
+    if signal != 6 and signal != 7 and now:
+        if time.time() >= now + 2:
+            signal = 5
+            print('true')
        #break #i think these are causing the program to exit early
     
 ser.close()
