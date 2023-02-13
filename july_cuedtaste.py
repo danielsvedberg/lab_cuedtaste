@@ -81,37 +81,33 @@ class NosePoke:
 # cue is a class that controls playback of a specific file. I imagine this class will be changed so that play_cue
 class Cue:
     
-    def __init__(self, signal): 
+    def __init__(self, signal, ser): 
         self.signal = signal
         self.cuestate = False
+        self.ser = ser
 
     def play_cue(self):
-        #self.cuestate = False
-        check = False
-        ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
-        
+        self.cuestate = True #changing cuestate hopefully will get caught by the record system
         MESSAGE = str(self.signal).encode('utf-8')
         print('raw', str(self.signal).encode('utf-8'))
         
-        ser.write(MESSAGE)
         time.sleep(0.001)
         received = ser.read(1)
         while not received == MESSAGE:
             ser.write(MESSAGE)
             time.sleep(0.001)
             received = ser.read(1)
-            
         print("message:", MESSAGE, type(MESSAGE))
-        check = False
+        self.cuestate = False
         
     def is_playing(self):
-        return self.cuestate == True
+        return self.cuestate #TODO: change this so that it doesn't automatically return false
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
-    def __init__(self, light, beam, signal):
+    def __init__(self, light, beam, signal, ser):
         NosePoke.__init__(self, light, beam)
-        Cue.__init__(self, signal)
+        Cue.__init__(self, signal, ser)
 
 
 # class TasteLine controls an individual taste-valve and its associated functions: clearouts,
@@ -187,9 +183,9 @@ class TasteLine:
 
 # TastecueLine allows for a cue to be associated with a corresponding TasteLine
 class TasteCueLine(TasteLine, Cue):
-    def __init__(self, valve, intanOut, opentime, taste, signal):
+    def __init__(self, valve, intanOut, opentime, taste, signal, ser):
         TasteLine.__init__(self, valve, intanOut, opentime, taste)
-        Cue.__init__(self, signal)
+        Cue.__init__(self, signal, ser)
 
 
 ### SECTION 2: MISC. FUNCTIONS
@@ -294,12 +290,14 @@ def generate_sig(used_lines):
     
 ##cuedtaste is the central function that runs the behavioral task.
 def cuedtaste():
+
     anID = str(input("enter animal ID: "))
     runtime = int(input("enter runtime in minutes: "))
     starttime = time.time()  # start of task
     endtime = starttime + runtime * 60  # end of task
     rew.endtime = endtime
     trig.endtime = endtime
+    
     iti = 5  # inter-trial-interval
     wait = 1  # how long rat has to poke trigger to activate
     Hz = 3.9  # poke lamp flash frequency
@@ -393,21 +391,24 @@ if __name__=="__main__":
     intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
-    sigs = [0,1,2,3]
-    lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i]) for i in range(4)]
-    base = Cue(5)
-    end = Cue(6)
+    ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+    ser.flushInput()
+    ser.flushOutput()
+    
+    sigs = [0,1,2,3] #TODO: what is going on here? Why is it 0-3 and then 5,6?
+    lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i], ser) for i in range(4)]
+    base = Cue(5, ser)
+    end = Cue(6, ser)
     
     # initialize nosepokes:
     rew = NosePoke(36, 11)  # initialize "reward" nosepoke. "Rew" uses GPIO pins 38 as output for the light, and 11 as
     # input for the IR sensor. For the light, 1 = On, 0 = off. For the sensor, 1 = uncrossed, 0 = crossed.
-    trig = Trigger(38, 13, 4)  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
+    trig = Trigger(38, 13, 4, ser)  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
     # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a cue.
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
 	# flush input and output of serial
-	ser.flushInput()
-    ser.flushOutput()
+
  # This loop executes the main menu and menu-options
     while True:
         ## While loop which will keep going until loop = False

@@ -134,8 +134,6 @@ ser.flushInput()
 ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
 
-signal = 0
-
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
@@ -155,7 +153,7 @@ GPIO.setmode(GPIO.BOARD)
 for pin in pins:
     GPIO.setup(pin, GPIO.OUT)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
-# if the signal is 0, the pink noise will play until the animal begins the next trial
+# if the signal is 5, the pink noise will play until the animal begins the next trial
 # pink noise indicates the ability to start the next trial
 # @run_once
 def pause_play(num):
@@ -183,8 +181,6 @@ done = False
 # Used to manage how fast the screen updates
 clock = pg.time.Clock()
 # pause_play(0)  # to play white noise in the beginning
-old_value = signal
-old_ID = sig_ID  # dec. 2021
 
 screen.fill(WHITE)
 cue = cue_5
@@ -192,6 +188,10 @@ cue.update()
 cue.draw(screen)
 pg.display.flip()
 clock.tick(60)
+signal = 5 #this sets the base signal. Changed from 0 because signal for 0 was changed to a sine wave and blocks, which is not what we want
+old_value = signal
+old_ID = sig_ID  # dec. 2021
+
 
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
@@ -206,96 +206,77 @@ while not done:
     while ser.in_waiting > 0:
         ######################## NOT YET TESTED
         received = ser.read(1).decode('utf-8', 'ignore')
-        if received in ["1", "2", "3", "4", "5", "6"]:
+        if received in ["0","1", "2", "3", "4", "5", "6"]:
             print(received, type(received))
             signal = int(received)
             ser.write(received.encode('utf-8'))
-        
-        ###########################################
-        # print(signal)
-        # data = signal.decode('utf-8', 'ignore')
-        # print('data:' + data, type(data))
-        # datafr = int(data)
-        # print(datafr, type(datafr))
-        ############################
-        ######## TESTED ############
-        #datafr = str(signal)
-        #datafr = int.from_bytes(datafr, "big", signed="True")
-        # send this to function that initiates tone/replace keyboard values
-        # signal = int.from_bytes(data, "big", signed="True")
-
-        ###############################
-        #print(f"Received: {datafr}")
-        # converts datafr back to signal var
-
-        # sets up a unique ID for each value received 
-        sig_ID = sig_ID + 1
-        print("received message:", signal, "ID", sig_ID)
-        now = time.time()
+            sig_ID = sig_ID + 1
+            print("received message:", signal, "ID", sig_ID)
+            now = time.time()
     
-        while not done:
-            # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
-            if sig_ID != old_ID or signal != old_value:
-                print(sig_ID, "old", old_ID)
-                in_flag = 0
+    #while not done:
+        # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
+    if sig_ID != old_ID or signal != old_value:
+        print(sig_ID, "old", old_ID)
+        in_flag = 0
 
-            if in_flag == 0:  # PRINT TO CONSOLE TEST 
-                print("old value", old_value, "get signal",
-                        signal, "old ID", old_ID, "new ID", sig_ID)
+    if in_flag == 0:  # PRINT TO CONSOLE TEST 
+        print("old value", old_value, "get signal",
+                signal, "old ID", old_ID, "new ID", sig_ID)
 
-            # Clear the screen
-            screen.fill(WHITE)
+    # Clear the screen
+    screen.fill(WHITE)
 
-            # This for-loop checks for key presses that changes the cue, and also to quit the program.
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    done = True
-                if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
-                    done = True
-                    
-            if signal == 4 and in_flag == 0: #trigger open cue
-                pause_play(signal)
-                cue = cues[signal]
-                in_flag = 1
-                    
-            if signal in cnums and in_flag == 0: #taste-offer cue
-                cue = cues[signal]
-                pause_play(signal)
-                GPIO.output(pins[signal],1)
-                last_pin = pins[signal]
-                cueend = time.time() + 1
-                in_flag = 1
-
-            if signal == 5 and in_flag == 0 and time.time() > cueend:  # stop cues/"blank" cue
-                GPIO.output(last_pin,0)
-                pg.mixer.stop()
-                screen.fill(BLACK)
-                pg.display.flip()
-                in_flag = 0
-                break 
-
-            if signal == 6:
-                pg.mixer.stop()
-                in_flag = 0
-                screen.fill(BLACK)
-                done = True
-            # Go ahead and update the screen with what we've drawn.
-            #for entity in cue:
-            cue.update()
-            cue.draw(screen)
-            pg.display.update()
-            pg.display.flip()
+    # This for-loop checks for key presses that changes the cue, and also to quit the program.
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            done = True
+        if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+            done = True
             
-            old_value = signal
+    if signal == 4 and in_flag == 0: #trigger open cue
+        pause_play(signal)
+        cue = cues[signal]
+        in_flag = 1
+            
+    if signal in cnums and in_flag == 0: #taste-offer cue
+        cue = cues[signal]
+        pause_play(signal)
+        GPIO.output(pins[signal],1)
+        last_pin = pins[signal]
+        cueend = time.time() + 1
+        in_flag = 1
 
-            old_ID = sig_ID  # exchanges old ID value 
+    if signal == 5 and in_flag == 0 and time.time() > cueend:  # stop cues/"blank" cue
+        GPIO.output(last_pin,0)
+        pg.mixer.stop()
+        screen.fill(BLACK)
+        pg.display.flip()
+        in_flag = 0
+        break 
 
-            # Limit to 60 frames per second
-            clock.tick(80)
+    if signal == 6:
+        pg.mixer.stop()
+        in_flag = 0
+        screen.fill(BLACK)
+        done = True
+    # Go ahead and update the screen with what we've drawn.
+    #for entity in cue:
+    cue.update()
+    cue.draw(screen)
+    pg.display.update()
+    pg.display.flip()
+    
+    old_value = signal
 
-            if signal != 6 and signal != 7 and time.time() >= now + 2:
-                signal = str(5).encode('utf-8')
-                print('true')
-                break
+    old_ID = sig_ID  # exchanges old ID value 
+
+    
+    clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
+
+    #if signal != 6 and signal != 7 and time.time() >= now + 2:
+     #   signal = str(5).encode('utf-8')
+      #  print('true')
+       # break
 ser.close()
 pg.quit()
