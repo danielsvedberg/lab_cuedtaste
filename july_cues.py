@@ -248,12 +248,12 @@ while not done:
         in_flag = 1
 
     if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
-        if time.time() > cueend: 
-            GPIO.output(last_pin,0)
-            pg.mixer.stop()
-            screen.fill(BLACK)
-            pg.display.flip()
-            in_flag = 0
+        #if time.time() > cueend: #changed control of cue cessation from here to july_cuedtaste
+        GPIO.output(last_pin,0)
+        pg.mixer.stop()
+        screen.fill(BLACK)
+        pg.display.flip()
+        in_flag = 0
             #break 
 
     if signal == 6:
