@@ -249,7 +249,7 @@ while not done:
         cueend = time.time() + 1
         in_flag = 1
 
-    if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
+    if signal == 5 and in_flag == 1:  # stop cues/"blank" cue, in_flag == 1 means the cue should cease when 5 is sent over
         #if time.time() > cueend: #changed control of cue cessation from here to july_cuedtaste
         #GPIO.output(last_pin,0)
         pg.mixer.stop()
