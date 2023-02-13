@@ -346,7 +346,7 @@ def cuedtaste():
                 rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 start = time.time()
-                time.sleep(0.5) #control the delay and cessation of cue here instead of on july_cues.py
+                time.sleep(1) #control the delay and cessation of cue here instead of on july_cues.py
                 base.play_cue()
                 state = 2
                 
