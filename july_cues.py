@@ -197,6 +197,7 @@ in_flag = 0  # in flag is used to condition the if statements below so that paus
 cnums = [0,1,2,3]
 played_nums = []
 clock = pg.time.Clock() # Moved out of while loop
+now = time.time()
 # -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
@@ -275,8 +276,7 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 6 and signal != 7 and now in locals():
-        if time.time() >= now + 2:
+    if signal != 6 and signal != 7 and time.time() >= now + 2:
             signal = 5
             print('true')
        #break #i think these are causing the program to exit early
