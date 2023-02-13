@@ -133,7 +133,7 @@ ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
 ser.flushInput()
 ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
-cueend = 0
+cueend = None
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
