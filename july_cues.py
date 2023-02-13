@@ -254,13 +254,13 @@ while not done:
             screen.fill(BLACK)
             pg.display.flip()
             in_flag = 0
-            break 
+            #break 
 
     if signal == 6:
         pg.mixer.stop()
         in_flag = 0
         screen.fill(BLACK)
-        done = True
+        done = True #this is what ends the program
     # Go ahead and update the screen with what we've drawn.
     #for entity in cue:
     cue.update()
@@ -278,7 +278,7 @@ while not done:
     if signal != 6 and signal != 7 and time.time() >= now + 2:
        signal = 5
        print('true')
-       break
+       #break #i think these are causing the program to exit early
     
 ser.close()
 pg.quit()
