@@ -133,7 +133,7 @@ ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
 ser.flushInput()
 ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
-cueend = 10
+#cueend = 10
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
@@ -247,13 +247,14 @@ while not done:
         cueend = time.time() + 1
         in_flag = 1
 
-    if signal == 5 and in_flag == 0 and time.time() > cueend:  # stop cues/"blank" cue
-        GPIO.output(last_pin,0)
-        pg.mixer.stop()
-        screen.fill(BLACK)
-        pg.display.flip()
-        in_flag = 0
-        break 
+    if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
+        if time.time() > cueend: 
+            GPIO.output(last_pin,0)
+            pg.mixer.stop()
+            screen.fill(BLACK)
+            pg.display.flip()
+            in_flag = 0
+            break 
 
     if signal == 6:
         pg.mixer.stop()
