@@ -85,23 +85,23 @@ class Cue:
         self.signal = signal
         self.cuestate = False
         self.ser = ser
+        self.MESSAGE = str(self.signal).encode('utf-8')
 
     def play_cue(self):
         self.cuestate = True #changing cuestate hopefully will get caught by the record system
-        MESSAGE = str(self.signal).encode('utf-8')
-        print('raw', str(self.signal).encode('utf-8'))
+        print('raw', self.MESSAGE)
         
         time.sleep(0.001)
         received = ser.read(1)
-        while not received == MESSAGE:
-            ser.write(MESSAGE)
+        while not received == self.MESSAGE:
+            ser.write(self.MESSAGE)
             time.sleep(0.001)
             received = ser.read(1)
-        print("message:", MESSAGE, type(MESSAGE))
+        print("message:", self.MESSAGE)
         self.cuestate = False
         
     def is_playing(self):
-        return self.cuestate #TODO: change this so that it doesn't automatically return false
+        return ser.read(1) == self.MESSAGE #TODO: change this so that it doesn't automatically return false
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
@@ -346,7 +346,7 @@ def cuedtaste():
                 trig_run.value = 0
                 rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
-                time.sleep(1) #control the delay and cessation of cue here instead of on july_cues.py
+                time.sleep(1) #control the delay and cessation of cue here
                 base.play_cue()
                 state = 2
                 

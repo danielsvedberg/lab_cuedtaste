@@ -244,20 +244,19 @@ while not done:
     if signal in cnums and in_flag == 0: #taste-offer cue
         cue = cues[signal]
         pause_play(signal)
-        GPIO.output(pins[signal],1)
+        #GPIO.output(pins[signal],1)
         last_pin = pins[signal]
         cueend = time.time() + 1
         in_flag = 1
+        #GPIO.output(pins[signal],0) #commented out to help with debugging
 
     if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
-        #if time.time() > cueend: #changed control of cue cessation from here to july_cuedtaste
-        #GPIO.output(last_pin,0) #commented out to help with debugging
+
         cue = cues[signal] #this should replace the previously presented cue with a black screen
         pg.mixer.stop()
         screen.fill(BLACK)
         pg.display.flip()
         in_flag = 0
-            #break 
 
     if signal == 6:
         pg.mixer.stop()
