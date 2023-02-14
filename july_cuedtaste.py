@@ -285,7 +285,7 @@ def generate_sig(used_lines):
         signal = int(random.choice([i for i in [0,1] if i not in used_lines]))
         print ('new sig', signal)
     
-    used_lines.append(signal)
+    used_lines.append(signal) #is this actualy appending?
     return signal
     
 ##cuedtaste is the central function that runs the behavioral task.
@@ -328,7 +328,7 @@ def cuedtaste():
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             trig_run.value = 1
             # line = random.randint(0,3)  # select random taste
-            line = generate_sig(used_lines)
+            line = generate_sig(used_lines) 
             trig.play_cue() 
             state = 1
             print("new trial")
@@ -336,15 +336,16 @@ def cuedtaste():
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
+                print("cue number: ", str(line))
+                lines[line].play_cue() 
                 lines[3].deliver()
-                lines[line].play_cue()  # taste-associated cue cue is played
-                #start = time.time()
+                start = time.time()
+                 # taste-associated cue cue is played
                 print("trigger activated")
-                #trig_run.value = 2  # trigger light goes from blinking to just on
+                trig_run.value = 2  # trigger light goes from blinking to just on
                 trig_run.value = 0
                 rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
-                start = time.time()
                 time.sleep(1) #control the delay and cessation of cue here instead of on july_cues.py
                 base.play_cue()
                 state = 2
@@ -402,9 +403,9 @@ if __name__=="__main__":
     end = Cue(6, ser)
     
     # initialize nosepokes:
-    rew = NosePoke(36, 11)  # initialize "reward" nosepoke. "Rew" uses GPIO pins 38 as output for the light, and 11 as
+    rew = NosePoke(7, 11)  # initialize "reward" nosepoke. "Rew" uses GPIO pins 38 as output for the light, and 11 as
     # input for the IR sensor. For the light, 1 = On, 0 = off. For the sensor, 1 = uncrossed, 0 = crossed.
-    trig = Trigger(38, 13, 4, ser)  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
+    trig = Trigger(29, 13, 4, ser)  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
     # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a cue.
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
