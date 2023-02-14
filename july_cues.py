@@ -251,7 +251,7 @@ while not done:
 
     if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
         #if time.time() > cueend: #changed control of cue cessation from here to july_cuedtaste
-        #GPIO.output(last_pin,0)
+        #GPIO.output(last_pin,0) #commented out to help with debugging
         cue = cues[signal] #this should replace the previously presented cue with a black screen
         pg.mixer.stop()
         screen.fill(BLACK)
