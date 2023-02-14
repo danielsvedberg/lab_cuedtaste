@@ -197,6 +197,7 @@ in_flag = 0  # in flag is used to condition the if statements below so that paus
 cnums = [0,1,2,3]
 played_nums = []
 clock = pg.time.Clock() # Moved out of while loop
+now = time.time()
 # -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
@@ -210,6 +211,7 @@ while not done:
             print(received, type(received))
             signal = int(received)
             ser.write(received.encode('utf-8'))
+            time.sleep(0.001)
             sig_ID = sig_ID + 1
             print("received message:", signal, "ID", sig_ID)
             now = time.time()
@@ -248,19 +250,20 @@ while not done:
         in_flag = 1
 
     if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
-        if time.time() > cueend: 
-            GPIO.output(last_pin,0)
-            pg.mixer.stop()
-            screen.fill(BLACK)
-            pg.display.flip()
-            in_flag = 0
-            break 
+        #if time.time() > cueend: #changed control of cue cessation from here to july_cuedtaste
+        #GPIO.output(last_pin,0)
+        cue = cues[signal] #this should replace the previously presented cue with a black screen
+        pg.mixer.stop()
+        screen.fill(BLACK)
+        pg.display.flip()
+        in_flag = 0
+            #break 
 
     if signal == 6:
         pg.mixer.stop()
         in_flag = 0
         screen.fill(BLACK)
-        done = True
+        done = True #this is what ends the program
     # Go ahead and update the screen with what we've drawn.
     #for entity in cue:
     cue.update()
@@ -276,9 +279,9 @@ while not done:
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
     if signal != 6 and signal != 7 and time.time() >= now + 2:
-       signal = 5
-       print('true')
-       break
+            signal = 5
+            print('true')
+       #break #i think these are causing the program to exit early
     
 ser.close()
 pg.quit()
