@@ -25,6 +25,7 @@ import multiprocessing as mp
 import socket
 import random
 import RPi.GPIO as GPIO
+import serial
 
 # Define some colors
 BLACK = (0,   0,   0)
@@ -115,16 +116,9 @@ pg.init()
 # iterates through the dictionary to load the image-values that correspond to the keys
 for key, value in image_dict.items():
     image_dict[key] = pg.image.load(value)
-
-UDP_IP = "129.64.50.48"
-# UDP_IP = "172.20.186.173"
-UDP_PORT = 5005
-
-sock = socket.socket(socket.AF_INET,  # internet
-                        socket.SOCK_DGRAM)  # UDP
-
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock.bind((UDP_IP, UDP_PORT))
+ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+ser.flushInput()
+ser.flushOutput()
 
 sig_ID = 0  # transfers the unique ID from receive function to main program
 
@@ -190,43 +184,44 @@ clock.tick(60)
 in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
 played_nums = []
-
+now = time.time()
 # -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
-    clock = pg.time.Clock()
     old_value = signal
     old_ID = sig_ID  # dec. 2021
 
-    data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
-    if data:
-        # send this to function that initiates tone/replace keyboard values
-        signal = int.from_bytes(data, "big", signed="True")
-
+    while ser.in_waiting > 0:
+        received= ser.read(1).decode('utf-8','ignore')
+        if received in ["0","1","2","3","4","5","6"]:
+            print(received, type(received))
+            signal=int(received)
+            ser.write(received.encode('utf-8'))
+            time.sleep(0.001)
         # sets up a unique ID for each value received 
-        sig_ID = sig_ID + 1
-        print("received message:", signal, "ID", sig_ID)
-        now = time.time()
+            sig_ID = sig_ID + 1
+            print("received message:", signal, "ID", sig_ID)
+            now = time.time()
     
-        while not done:
-            # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
-            if sig_ID != old_ID or signal != old_value:
-                print(sig_ID, "old", old_ID)
-                in_flag = 0
 
-            if in_flag == 0:  # PRINT TO CONSOLE TEST 
-                print("old value", old_value, "get signal",
-                        signal, "old ID", old_ID, "new ID", sig_ID)
+        # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
+        if sig_ID != old_ID or signal != old_value:
+            print(sig_ID, "old", old_ID)
+            in_flag = 0
 
-            # Clear the screen
-            screen.fill(WHITE)
+        if in_flag == 0:  # PRINT TO CONSOLE TEST 
+            print("old value", old_value, "get signal",
+                    signal, "old ID", old_ID, "new ID", sig_ID)
+
+        # Clear the screen
+        screen.fill(WHITE)
 
             # This for-loop checks for key presses that changes the cue, and also to quit the program.
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    done = True
-                if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
-                    done = True
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                done = True
+            if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+                done = True
                     
             if signal == 4 and in_flag == 0: #trigger open cue
                 pause_play(signal)
@@ -273,4 +268,5 @@ while not done:
                 print('true')
                 break
 
+ser.close()
 pg.quit()
