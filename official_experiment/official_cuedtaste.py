@@ -101,7 +101,7 @@ class Cue:
         self.cuestate = False
         
     def is_playing(self):
-        return ser.read(1) == self.MESSAGE #TODO: change this so that it doesn't automatically return false
+        return ser.read(1) == self.MESSAGE 
 
 # Trigger allows a NosePoke and cue to be associated
 class Trigger(NosePoke, Cue):
@@ -175,11 +175,8 @@ class TasteLine:
         GPIO.output(self.intanOut, 0)
                                                        
     def is_open(self):  # reports if valve is open
-        if GPIO.input(self.valve):
-            return True
-        else:
-            return False
-
+        return GPIO.input(self.valve)
+           
 
 # TastecueLine allows for a cue to be associated with a corresponding TasteLine
 class TasteCueLine(TasteLine, Cue):
@@ -347,7 +344,7 @@ def cuedtaste():
                 rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 time.sleep(1) #control the delay and cessation of cue here
-                base.play_cue()
+                #base.play_cue() # TODO: end the cue on the cue pi instead of here to reduce the # of handshakes that makes the program wait
                 state = 2
                 
 

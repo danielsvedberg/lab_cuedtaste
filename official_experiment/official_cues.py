@@ -116,19 +116,6 @@ pg.init()
 for key, value in image_dict.items():
     image_dict[key] = pg.image.load(value)
 
-#######################################################################
-# UDP_IP = "129.64.50.48"
-# # UDP_IP = "172.20.186.173"
-# UDP_PORT = 5005
-
-# sock = socket.socket(socket.AF_INET,  # internet
-#                         socket.SOCK_DGRAM)  # UDP
-
-# sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-# sock.bind((UDP_IP, UDP_PORT))
-
-
-#######################################################################
 ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
 ser.flushInput()
 ser.flushOutput()
@@ -237,30 +224,30 @@ while not done:
             done = True
             
     if signal == 4 and in_flag == 0: #trigger open cue
+        in_flag = 1
         pause_play(signal)
         cue = cues[signal]
-        in_flag = 1
             
     if signal in cnums and in_flag == 0: #taste-offer cue
         cue = cues[signal]
+        in_flag = 1
         pause_play(signal)
         #GPIO.output(pins[signal],1)
         last_pin = pins[signal]
         cueend = time.time() + 1
-        in_flag = 1
         #GPIO.output(pins[signal],0) #commented out to help with debugging
 
     if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
 
         cue = cues[signal] #this should replace the previously presented cue with a black screen
+        in_flag = 1
         pg.mixer.stop()
         screen.fill(BLACK)
         pg.display.flip()
-        in_flag = 0
 
     if signal == 6:
-        pg.mixer.stop()
         in_flag = 0
+        pg.mixer.stop()
         screen.fill(BLACK)
         done = True #this is what ends the program
     # Go ahead and update the screen with what we've drawn.
@@ -277,10 +264,10 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 6 and signal != 7 and time.time() >= now + 2:
+    if signal != 5 and signal != 6 and time.time() >= now + 2:
             signal = 5
             print('true')
-       #break #i think these are causing the program to exit early
+            #break #i think these are causing the program to exit early
     
 ser.close()
 pg.quit()
