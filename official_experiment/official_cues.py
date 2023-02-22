@@ -264,7 +264,8 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 5 and signal != 6 and time.time() >= now + 2:
+    if signal != 5 and signal != 6 and time.time() >= now + 1:
+            in_flag = 0
             signal = 5
             print('true')
             #break #i think these are causing the program to exit early
