@@ -192,7 +192,7 @@ while not done:
     old_ID = sig_ID  # dec. 2021
 
     while ser.in_waiting > 0:
-        ######################## NOT YET TESTED
+        #######################################################################
         received = ser.read(1).decode('utf-8', 'ignore')
         if received in ["0","1", "2", "3", "4", "5", "6"]:
             print(received, type(received))
@@ -200,7 +200,6 @@ while not done:
             ser.write(received.encode('utf-8'))
             time.sleep(0.001)
             sig_ID = sig_ID + 1
-           # print("received message:", signal, "ID", sig_ID)
             now = time.time()
     
     #while not done:
@@ -264,7 +263,7 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 5 and signal != 6 and time.time() >= now + 1:
+    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 1:
             in_flag = 0
             signal = 5
             print('true')
