@@ -91,11 +91,11 @@ class Cue:
         self.cuestate = True #changing cuestate hopefully will get caught by the record system
         print('raw', self.MESSAGE)
         
-        time.sleep(0.001)
+        #time.sleep(0.001)
         received = ser.read(1)
         while not received == self.MESSAGE:
             ser.write(self.MESSAGE)
-            time.sleep(0.001)
+            #time.sleep(0.001)
             received = ser.read(1)
         print("message:", self.MESSAGE)
         self.cuestate = False
@@ -390,7 +390,9 @@ if __name__=="__main__":
     intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
-    ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+        
+    #we think clock is slow by 0.0002%, so we will multiply baudrate of 38400*1.0002 = 38408
+    ser = serial.Serial('/dev/ttyS0', baudrate = 38408, timeout = 0.001)
     ser.flushInput()
     ser.flushOutput()
     

@@ -199,7 +199,7 @@ while not done:
             print(received, type(received))
             signal = int(received)
             ser.write(received.encode('utf-8'))
-            time.sleep(0.001)
+            #time.sleep(0.001)
             sig_ID = sig_ID + 1
             now = time.time()
     
