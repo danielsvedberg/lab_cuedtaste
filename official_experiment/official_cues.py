@@ -252,7 +252,7 @@ while not done:
     if signal == 6:
         in_flag = 0
         pg.mixer.stop()
-        screen.fill(BLACK
+        screen.fill(BLACK)
         done = True #this is what ends the program
         
     # Go ahead and update the screen with what we've drawn.
