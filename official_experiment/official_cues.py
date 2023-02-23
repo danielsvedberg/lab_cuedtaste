@@ -237,19 +237,24 @@ while not done:
         cueend = time.time() + 1
         #GPIO.output(pins[signal],0) #commented out to help with debugging
 
-    if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
-
-        cue = cues[signal] #this should replace the previously presented cue with a black screen
+    if signal == 5 and in_flag == 0:  # stop cues/"blank" cu
+        cue = cues[5] #this should replace the previously presented cue with a black screen
         in_flag = 1
         pg.mixer.stop()
-        screen.fill(BLACK)
-        pg.display.flip()
-
+        #screen.fill(BLACK)
+        #pg.display.flip()
+        
+    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 1:
+            in_flag = 0
+            signal = 5
+            print('true')
+            
     if signal == 6:
         in_flag = 0
         pg.mixer.stop()
-        screen.fill(BLACK)
+        screen.fill(BLACK
         done = True #this is what ends the program
+        
     # Go ahead and update the screen with what we've drawn.
     #for entity in cue:
     cue.update()
@@ -264,10 +269,6 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
-    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 1:
-            in_flag = 0
-            signal = 5
-            print('true')
             #break #i think these are causing the program to exit early
     
 ser.close()
