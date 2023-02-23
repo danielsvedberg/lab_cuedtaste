@@ -391,8 +391,7 @@ if __name__=="__main__":
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
         
-    #we think clock is slow by 0.0002%, so we will multiply baudrate of 38400*1.0002 = 38408
-    ser = serial.Serial('/dev/ttyS0', baudrate = 38408, timeout = 0.001)
+    ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
     ser.flushInput()
     ser.flushOutput()
     
