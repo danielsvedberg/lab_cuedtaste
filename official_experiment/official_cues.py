@@ -180,11 +180,12 @@ old_value = signal
 old_ID = sig_ID  # dec. 2021
 
 
-in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
+in_flag = 1  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
 played_nums = []
 clock = pg.time.Clock() # Moved out of while loop
 now = time.time()
+cue = cues[signal]
 # -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
@@ -205,12 +206,12 @@ while not done:
     #while not done:
         # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
     if sig_ID != old_ID or signal != old_value:
-        print(sig_ID, "old", old_ID)
-        in_flag = 0
-
-    if in_flag == 0:  # PRINT TO CONSOLE TEST 
         print("old value", old_value, "get signal",
                 signal, "old ID", old_ID, "new ID", sig_ID)
+        in_flag = 0
+
+    #if in_flag == 0:  # PRINT TO CONSOLE TEST 
+       
 
     # Clear the screen
     screen.fill(WHITE)
