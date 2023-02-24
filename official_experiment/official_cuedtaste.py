@@ -336,6 +336,7 @@ def cuedtaste():
             #Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
+            print(trig.is_crossed())
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
                 #trig_run.value = 0
@@ -368,6 +369,8 @@ def cuedtaste():
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()
+    trig.flash_off()
+    rew.flash_off()
     #recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
     #rew_flash.join()
     #trig_flash.join()
