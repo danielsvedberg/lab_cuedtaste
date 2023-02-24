@@ -329,13 +329,12 @@ def cuedtaste():
             trig.play_cue() 
             state = 1
             print("new trial")
-            #Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
-                print("cue number: ", str(line))
-                lines[3].deliver()
                 lines[line].play_cue() 
+                print("cue number: ", str(line))
+                # lines[3].deliver()
                 #start = time.time()
                  # taste-associated cue cue is played
                 print("trigger activated")
