@@ -93,10 +93,13 @@ class Cue:
         
         time.sleep(0.001)
         received = ser.read(1)
-        while not received == self.MESSAGE:
+        #while not received == self.MESSAGE:
+        i=0
+        while i<2:
             ser.write(self.MESSAGE)
             time.sleep(0.001)
-            received = ser.read(1)
+            #received = ser.read(1)
+            i += 1
         print("message:", self.MESSAGE)
         self.cuestate = False
         
@@ -329,7 +332,6 @@ def cuedtaste():
             trig.play_cue() 
             state = 1
             print("new trial")
-            #Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
