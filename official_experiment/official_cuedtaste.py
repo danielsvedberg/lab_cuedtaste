@@ -93,10 +93,12 @@ class Cue:
         
         time.sleep(0.001)
         received = ser.read(1)
+        print("Before While loop", received)
         while not received == self.MESSAGE:
             ser.write(self.MESSAGE)
             time.sleep(0.001)
             received = ser.read(1)
+            print("Inside", received)
         print("message:", self.MESSAGE)
         self.cuestate = False
         
