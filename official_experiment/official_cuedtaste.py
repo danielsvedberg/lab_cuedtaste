@@ -336,7 +336,7 @@ def cuedtaste():
             #Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
-            time.sleep(0.001)
+            time.sleep(0.01)
             print(trig.is_crossed()) #TODO: figure out why 
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
@@ -357,7 +357,7 @@ def cuedtaste():
                 
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
-            time.sleep(0.001)
+            time.sleep(0.01)
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
                 #rew_run.value = 0
                 rew.flash_off()
