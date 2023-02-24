@@ -392,7 +392,7 @@ if __name__=="__main__":
     intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
-    ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+    ser = serial.Serial('/dev/ttyS0', baudrate = 9600, timeout = 0.001)
     ser.flushInput()
     ser.flushOutput()
     
