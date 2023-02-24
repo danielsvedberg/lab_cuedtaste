@@ -391,7 +391,7 @@ if __name__=="__main__":
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
         
-    ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+    ser = serial.Serial('/dev/ttyS0', baudrate = 19200, timeout = 0.005)
     ser.flushInput()
     ser.flushOutput()
     
