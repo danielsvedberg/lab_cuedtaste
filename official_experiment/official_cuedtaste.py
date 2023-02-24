@@ -301,15 +301,15 @@ def cuedtaste():
     crosstime = 10  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
 
     # setting up parallel multiprocesses for light flashing and data logging
-    rew_run = mp.Value("i", 0)
-    trig_run = mp.Value("i", 0) # 'i' is for integer, datatype.
+    #rew_run = mp.Value("i", 0)
+    #trig_run = mp.Value("i", 0) # 'i' is for integer, datatype.
 
-    rew_flash = mp.Process(target=rew.flash, args=(Hz, rew_run,))
-    trig_flash = mp.Process(target=trig.flash, args=(Hz, trig_run,))
+    #rew_flash = mp.Process(target=rew.flash, args=(Hz, rew_run,))
+    #trig_flash = mp.Process(target=trig.flash, args=(Hz, trig_run,))
     #recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID,))
 
-    rew_flash.start()
-    trig_flash.start()
+    #rew_flash.start()
+    #trig_flash.start()
     #recording.start()
 
     state = 0  # [state] controls state of task. Refer to PDF of hand-drawn diagram for visual guide
@@ -323,26 +323,28 @@ def cuedtaste():
             trig_keep_out.start()
             rew_keep_out.join()
             trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
-            trig_run.value = 1
             # line = random.randint(0,3)  # select random taste
             line = generate_sig(used_lines) 
             trig.play_cue() 
+            #trig_run.value = 1
             state = 1
             print("new trial")
+            trig.flash_on()
             #Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
-                trig_run.value = 0
+                #trig_run.value = 0
+                trig.flash_off()
                 lines[3].deliver()
                 lines[line].play_cue() 
                 #start = time.time()
                  # taste-associated cue cue is played
                 print("trigger activated")
                 #trig_run.value = 2  # trigger light goes from blinking to just on
-                
-                rew_run.value = 1
+                rew.flash_on()
+                #rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 #time.sleep(1) #control the delay and cessation of cue here
                 #base.play_cue() # TODO: end the cue on the cue pi instead of here to reduce the # of handshakes that makes the program wait
@@ -351,12 +353,14 @@ def cuedtaste():
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
-                rew_run.value = 0
+                #rew_run.value = 0
+                rew.flash_off()
                 lines[line].deliver()
                 print("reward delivered")
                 state = 0
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0
-                rew_run.value = 0
+                #rew_run.value = 0
+                rew.flash_off()
                 state = 0
 
     base.play_cue()  # kill any lingering cues after task is over
