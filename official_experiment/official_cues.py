@@ -175,7 +175,7 @@ cue.update()
 cue.draw(screen)
 pg.display.flip()
 clock.tick(60)
-signal = 5 #this sets the base signal. Changed from 0 because signal for 0 was changed to a sine wave and blocks, which is not what we want
+signal = 4 #this sets the base signal. Changed from 0 because signal for 0 was changed to a sine wave and blocks, which is not what we want
 old_value = signal
 old_ID = sig_ID  # dec. 2021
 
