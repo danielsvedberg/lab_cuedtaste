@@ -308,8 +308,8 @@ def cuedtaste():
     trig_flash = mp.Process(target=trig.flash, args=(Hz, trig_run,))
     #recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID,))
 
-    #rew_flash.start()
-    #trig_flash.start()
+    rew_flash.start()
+    trig_flash.start()
     #recording.start()
 
     state = 0  # [state] controls state of task. Refer to PDF of hand-drawn diagram for visual guide
