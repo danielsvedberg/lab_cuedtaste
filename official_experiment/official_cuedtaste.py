@@ -336,7 +336,7 @@ def cuedtaste():
                 print("cue number: ", str(line))
                 # lines[3].deliver()
                 #start = time.time()
-                 # taste-associated cue cue is played
+                # taste-associated cue cue is played
                 print("trigger activated")
                 #trig_run.value = 2  # trigger light goes from blinking to just on
                 trig_run.value = 0
