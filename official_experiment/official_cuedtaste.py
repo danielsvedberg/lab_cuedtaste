@@ -327,6 +327,7 @@ def cuedtaste():
             # line = random.randint(0,3)  # select random taste
             line = generate_sig(used_lines) 
             trig.play_cue() 
+            print("State 1 shift")
             state = 1
             print("new trial")
 
