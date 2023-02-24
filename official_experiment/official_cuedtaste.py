@@ -91,11 +91,11 @@ class Cue:
         self.cuestate = True #changing cuestate hopefully will get caught by the record system
         print('raw', self.MESSAGE)
         
-        #time.sleep(0.001)
+        time.sleep(0.001)
         received = ser.read(1)
         while not received == self.MESSAGE:
             ser.write(self.MESSAGE)
-            #time.sleep(0.001)
+            time.sleep(0.001)
             received = ser.read(1)
         print("message:", self.MESSAGE)
         self.cuestate = False
@@ -402,7 +402,7 @@ if __name__=="__main__":
     # initialize nosepokes:
     rew = NosePoke(40, 38)  # initialize "reward" nosepoke. "Rew" uses GPIO pins 38 as output for the light, and 11 as
     # input for the IR sensor. For the light, 1 = On, 0 = off. For the sensor, 1 = uncrossed, 0 = crossed.
-    trig = Trigger(13, 15, 5, ser)  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
+    trig = Trigger(13, 15, 4, ser)  # initialize "trigger" trigger-class nosepoke. GPIO pin 38 = light output,
     # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a cue.
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
