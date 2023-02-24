@@ -95,7 +95,7 @@ class Cue:
         received = ser.read(1)
         #while not received == self.MESSAGE:
         i=0
-        while i<2:
+        while i<10:
             ser.write(self.MESSAGE)
             time.sleep(0.001)
             #received = ser.read(1)
@@ -337,7 +337,7 @@ def cuedtaste():
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
                 lines[line].play_cue() 
-                lines[3].deliver()
+               # lines[3].deliver()
                 start = time.time()
                  # taste-associated cue cue is played
                 print("trigger activated")
