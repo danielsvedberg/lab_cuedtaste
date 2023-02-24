@@ -315,14 +315,17 @@ def cuedtaste():
     state = 0  # [state] controls state of task. Refer to PDF of hand-drawn diagram for visual guide
 
     # this loop controls the task as it happens, when [endtime] is reached, loop exits and task program closes out
+    trig.flash_off()
+    rew.flash_off()
+    
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0: 
-            rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
-            trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
-            rew_keep_out.start()
-            trig_keep_out.start()
-            rew_keep_out.join()
-            trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
+            #rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
+            #trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
+            #rew_keep_out.start()
+            #trig_keep_out.start()
+            #rew_keep_out.join()
+            #trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             # line = random.randint(0,3)  # select random taste
             line = generate_sig(used_lines) 
             trig.play_cue() 
