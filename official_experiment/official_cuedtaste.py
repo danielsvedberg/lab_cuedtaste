@@ -337,7 +337,8 @@ def cuedtaste():
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             time.sleep(0.01)
-            print(trig.is_crossed()) #TODO: figure out why 
+            print(GPIO.input(15))
+            #print(trig.is_crossed()) #TODO: figure out why this always prints FALSE
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
                 #trig_run.value = 0
