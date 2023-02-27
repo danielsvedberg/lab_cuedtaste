@@ -332,7 +332,8 @@ def cuedtaste():
             #trig_run.value = 1
             state = 1
             print("new trial")
-            trig.flash_on()
+            rew.flash_on()
+            #trig.flash_on()
             #Cue(4).play_cue()
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
