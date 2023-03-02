@@ -212,7 +212,7 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
                 t = [str(round(time.time() - starttime, 3))]
                 t.extend(data)
                 record_writer.writerow(t)
-            time.sleep(0.005)
+            time.sleep(0.001)
     print("recording ended")
 
 
@@ -397,7 +397,7 @@ if __name__=="__main__":
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
         
-    ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.001)
+    ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.005)
     ser.flushInput()
     ser.flushOutput()
     
