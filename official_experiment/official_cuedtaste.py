@@ -40,11 +40,9 @@ class NosePoke:
         self.exit.set()
 
     def flash_on(self):  # turn the light on
-        print("flash on")
         GPIO.output(self.light, 0)
 
     def flash_off(self):  # turn the light off
-        print("flash off")
         GPIO.output(self.light, 1)
 
     def flash(self, hz, run):  # bink on and of at frequency hz (LED has physical limit of 3.9)
@@ -310,11 +308,11 @@ def cuedtaste():
 
     #rew_flash = mp.Process(target=rew.flash, args=(Hz, rew_run,))
     #trig_flash = mp.Process(target=trig.flash, args=(Hz, trig_run,))
-    #recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID,))
+    recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID,))
 
     #rew_flash.start()
     #trig_flash.start()
-    #recording.start()
+    recording.start()
 
     state = 0  # [state] controls state of task. Refer to PDF of hand-drawn diagram for visual guide
 
@@ -370,7 +368,7 @@ def cuedtaste():
     end.play_cue()
     trig.flash_off()
     rew.flash_off()
-    #recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
+    recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
     #rew_flash.join()
     #trig_flash.join()
     print("assay completed")
