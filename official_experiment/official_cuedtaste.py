@@ -201,12 +201,11 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
         record_writer = csv.writer(record_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         record_writer.writerow(fieldnames)
         while time.time() < endtime:
-
             data = [poke1.is_crossed(), poke2.is_crossed()]
             for item in lines:
                 data.append(item.is_open())
             for item in lines:
-                item.is_playing()
+                data.append(item.is_playing())
             if any(i == True for i in data):
                 [str(i) for i in data]
                 t = [str(round(time.time() - starttime, 3))]
