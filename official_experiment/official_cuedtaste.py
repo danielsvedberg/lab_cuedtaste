@@ -40,10 +40,12 @@ class NosePoke:
         self.exit.set()
 
     def flash_on(self):  # turn the light on
-        GPIO.output(self.light, 1)
+        print("flash on")
+        GPIO.output(self.light, 0)
 
     def flash_off(self):  # turn the light off
-        GPIO.output(self.light, 0)
+        print("flash off")
+        GPIO.output(self.light, 1)
 
     def flash(self, hz, run):  # bink on and of at frequency hz (LED has physical limit of 3.9)
         print("flashing "+str(self.light)+" start")
