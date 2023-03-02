@@ -211,7 +211,7 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
                 t = [str(round(time.time() - starttime, 3))]
                 t.extend(data)
                 record_writer.writerow(t)
-            time.sleep(0.001)
+            #time.sleep(0.001)
     print("recording ended")
 
 
