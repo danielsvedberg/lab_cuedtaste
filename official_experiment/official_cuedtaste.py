@@ -94,13 +94,13 @@ class Cue:
         print('raw', self.MESSAGE)
         
         #time.sleep(0.001)
-        received = ser.read(1)
-        while not received == self.MESSAGE: #commented out handshake to keep it lightweight
+        #received = ser.read(1)
+        #while not received == self.MESSAGE: #commented out handshake to keep it lightweight
         #end = time.time()+0.001
         #while time.time() < end: #bombard recipient for 1 second
-            ser.write(self.MESSAGE)
-            time.sleep(0.001)
-            received = ser.read(1)
+        ser.write(self.MESSAGE)
+        #time.sleep(0.001)
+        #received = ser.read(1)
         print("message:", self.MESSAGE)
         self.cuestate = False
         
