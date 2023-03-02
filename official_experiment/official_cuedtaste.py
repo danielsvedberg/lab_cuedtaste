@@ -92,11 +92,13 @@ class Cue:
         print('raw', self.MESSAGE)
         
         #time.sleep(0.001)
-        received = ser.read(1)
-        while not received == self.MESSAGE:
+        #received = ser.read(1)
+        #while not received == self.MESSAGE: #commented out handshake to keep it lightweight
+        end = time.time()+0.001
+        while time.time() < end: #bombard recipient for 1 second
             ser.write(self.MESSAGE)
             #time.sleep(0.001)
-            received = ser.read(1)
+            #received = ser.read(1)
         print("message:", self.MESSAGE)
         self.cuestate = False
         
@@ -332,35 +334,25 @@ def cuedtaste():
             #trig_run.value = 1
             state = 1
             print("new trial")
-            rew.flash_on()
-            #trig.flash_on()
-            #Cue(4).play_cue()
+            trig.flash_on() #trigger light turns on to signal availability
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
-            time.sleep(0.1)
-            print(GPIO.input(15))
-            print(GPIO.input(38))
-            #print(trig.is_crossed()) #TODO: figure out why this always prints FALSE
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
                 #trig_run.value = 0
                 trig.flash_off()
-                lines[3].deliver()
-                lines[line].play_cue() 
-                #start = time.time()
-                 # taste-associated cue cue is played
+                #lines[3].deliver() #commented out the trigger delivery since we were using it for troubleshooting
+                lines[line].play_cue() # taste-associated cue cue is played
                 print("trigger activated")
                 #trig_run.value = 2  # trigger light goes from blinking to just on
                 rew.flash_on()
                 #rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
-                #time.sleep(1) #control the delay and cessation of cue here
-                #base.play_cue() # TODO: end the cue on the cue pi instead of here to reduce the # of handshakes that makes the program wait
                 state = 2
-                
+                time.sleep(1) #impose a 1 second delay to reward activation, hopefully allows cue to play out
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
-            time.sleep(0.01)
+            #time.sleep(0.01)
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
                 #rew_run.value = 0
                 rew.flash_off()
