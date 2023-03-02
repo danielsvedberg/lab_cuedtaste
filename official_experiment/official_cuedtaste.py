@@ -322,6 +322,7 @@ def cuedtaste():
     
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0: 
+            trig.flash_on()
             #rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
             #trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
             #rew_keep_out.start()
@@ -333,8 +334,7 @@ def cuedtaste():
             trig.play_cue() 
             #trig_run.value = 1
             state = 1
-            print("new trial")
-            trig.flash_on() #trigger light turns on to signal availability
+            print("new trial") #trigger light turns on to signal availability
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
@@ -372,8 +372,6 @@ def cuedtaste():
     #rew_flash.join()
     #trig_flash.join()
     print("assay completed")
-
-
 
 ########################################################################################################################
 
