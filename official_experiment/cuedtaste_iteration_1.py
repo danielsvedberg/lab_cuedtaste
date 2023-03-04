@@ -40,10 +40,10 @@ class NosePoke:
         self.exit.set()
 
     def flash_on(self):  # turn the light on
-        GPIO.output(self.light, 0)
+        GPIO.output(self.light, 1)
 
     def flash_off(self):  # turn the light off
-        GPIO.output(self.light, 1)
+        GPIO.output(self.light, 0)
 
     def flash(self, hz, run):  # bink on and of at frequency hz (LED has physical limit of 3.9)
         print("flashing "+str(self.light)+" start")
@@ -91,16 +91,15 @@ class Cue:
         self.cuestate = True #changing cuestate hopefully will get caught by the record system
         print('raw', self.MESSAGE)
         
-
         time.sleep(0.001)
         received = ser.read(1)
-        print("Before While loop", received)
-        while not received == self.MESSAGE:
+        #while not received == self.MESSAGE:
+        i=0
+        while i<10:
             ser.write(self.MESSAGE)
             time.sleep(0.001)
-            received = ser.read(1)
-            print("Inside", received)
-
+            #received = ser.read(1)
+            i += 1
         print("message:", self.MESSAGE)
         self.cuestate = False
         
@@ -203,6 +202,7 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
         record_writer = csv.writer(record_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         record_writer.writerow(fieldnames)
         while time.time() < endtime:
+
             data = [poke1.is_crossed(), poke2.is_crossed()]
             for item in lines:
                 data.append(item.is_open())
@@ -213,7 +213,7 @@ def record(poke1, poke2, lines, starttime, endtime, anID):
                 t = [str(round(time.time() - starttime, 3))]
                 t.extend(data)
                 record_writer.writerow(t)
-            #time.sleep(0.001)
+            time.sleep(0.005)
     print("recording ended")
 
 
@@ -304,77 +304,70 @@ def cuedtaste():
     crosstime = 10  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
 
     # setting up parallel multiprocesses for light flashing and data logging
-    #rew_run = mp.Value("i", 0)
-    #trig_run = mp.Value("i", 0) # 'i' is for integer, datatype.
+    rew_run = mp.Value("i", 0)
+    trig_run = mp.Value("i", 0) # 'i' is for integer, datatype.
 
-    #rew_flash = mp.Process(target=rew.flash, args=(Hz, rew_run,))
-    #trig_flash = mp.Process(target=trig.flash, args=(Hz, trig_run,))
+    rew_flash = mp.Process(target=rew.flash, args=(Hz, rew_run,))
+    trig_flash = mp.Process(target=trig.flash, args=(Hz, trig_run,))
     recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID,))
 
-    #rew_flash.start()
-    #trig_flash.start()
+    rew_flash.start()
+    trig_flash.start()
     recording.start()
 
     state = 0  # [state] controls state of task. Refer to PDF of hand-drawn diagram for visual guide
 
     # this loop controls the task as it happens, when [endtime] is reached, loop exits and task program closes out
-    trig.flash_off()
-    rew.flash_off()
-    
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0: 
-            trig.flash_on()
-            #rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
-            #trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
-            #rew_keep_out.start()
-            #trig_keep_out.start()
-            #rew_keep_out.join()
-            #trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
+            rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
+            trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
+            rew_keep_out.start()
+            trig_keep_out.start()
+            rew_keep_out.join()
+            trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
+            trig_run.value = 1
             # line = random.randint(0,3)  # select random taste
             line = generate_sig(used_lines) 
             trig.play_cue() 
-
-            #trig_run.value = 1
             state = 1
-            print("new trial") #trigger light turns on to signal availability
+            print("new trial")
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
-                #trig_run.value = 0
-                trig.flash_off()
-                #lines[3].deliver() #commented out the trigger delivery since we were using it for troubleshooting
-                lines[line].play_cue() # taste-associated cue cue is played
-
+                lines[line].play_cue() 
+               # lines[3].deliver()
+                start = time.time()
+                 # taste-associated cue cue is played
                 print("trigger activated")
-                #trig_run.value = 2  # trigger light goes from blinking to just on
-                rew.flash_on()
-                #rew_run.value = 1
+                trig_run.value = 2  # trigger light goes from blinking to just on
+                trig_run.value = 0
+                rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
+                time.sleep(1) #control the delay and cessation of cue here
+                #base.play_cue() # TODO: end the cue on the cue pi instead of here to reduce the # of handshakes that makes the program wait
                 state = 2
-                time.sleep(1) #impose a 1 second delay to reward activation, hopefully allows cue to play out
+                
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
-            #time.sleep(0.01)
-            if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
-                #rew_run.value = 0
-                rew.flash_off()
+            if rew.is_crossed() and time.time() > start + wait/10:  # if rat crosses rewarder beam, deliver taste
+                rew_run.value = 0
                 lines[line].deliver()
                 print("reward delivered")
                 state = 0
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0
-                #rew_run.value = 0
-                rew.flash_off()
+                rew_run.value = 0
                 state = 0
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()
-    trig.flash_off()
-    rew.flash_off()
     recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
-    #rew_flash.join()
-    #trig_flash.join()
+    rew_flash.join()
+    trig_flash.join()
     print("assay completed")
+
+
 
 ########################################################################################################################
 
@@ -399,8 +392,7 @@ if __name__=="__main__":
     intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
-        
-    ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.01)
+    ser = serial.Serial('/dev/ttyS0', baudrate = 9600, timeout = 0.001)
     ser.flushInput()
     ser.flushOutput()
     

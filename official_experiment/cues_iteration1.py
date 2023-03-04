@@ -116,7 +116,7 @@ pg.init()
 for key, value in image_dict.items():
     image_dict[key] = pg.image.load(value)
 
-ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.01)
+ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
 ser.flushInput()
 ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
@@ -180,12 +180,11 @@ old_value = signal
 old_ID = sig_ID  # dec. 2021
 
 
-in_flag = 1  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
+in_flag = 0  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
 played_nums = []
 clock = pg.time.Clock() # Moved out of while loop
 now = time.time()
-cue = cues[signal]
 # -------- Main Program Loop -----------
 while not done:
     # Used to manage how fast the screen updates
@@ -206,12 +205,12 @@ while not done:
     #while not done:
         # #if there's any situation where the signal changes without triggering signal == 5, this statement changes in_flag
     if sig_ID != old_ID or signal != old_value:
-        print("old value", old_value, "get signal",
-                signal, "old ID", old_ID, "new ID", sig_ID)
+        print(sig_ID, "old", old_ID)
         in_flag = 0
 
-    #if in_flag == 0:  # PRINT TO CONSOLE TEST 
-       
+    if in_flag == 0:  # PRINT TO CONSOLE TEST 
+        print("old value", old_value, "get signal",
+                signal, "old ID", old_ID, "new ID", sig_ID)
 
     # Clear the screen
     screen.fill(WHITE)
@@ -237,24 +236,19 @@ while not done:
         cueend = time.time() + 1
         #GPIO.output(pins[signal],0) #commented out to help with debugging
 
-    if signal == 5 and in_flag == 0:  # stop cues/"blank" cu
-        cue = cues[5] #this should replace the previously presented cue with a black screen
+    if signal == 5 and in_flag == 0:  # stop cues/"blank" cue
+
+        cue = cues[signal] #this should replace the previously presented cue with a black screen
         in_flag = 1
         pg.mixer.stop()
-        #screen.fill(BLACK)
-        #pg.display.flip()
-        
-    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 1:
-            in_flag = 0
-            signal = 5
-            print('true')
-            
+        screen.fill(BLACK)
+        pg.display.flip()
+
     if signal == 6:
         in_flag = 0
         pg.mixer.stop()
         screen.fill(BLACK)
         done = True #this is what ends the program
-        
     # Go ahead and update the screen with what we've drawn.
     #for entity in cue:
     cue.update()
@@ -269,6 +263,10 @@ while not done:
     
     clock.tick(80) # clock.tick() updates the clock, argument Limits to 60 frames per second
 
+    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 1:
+            in_flag = 0
+            signal = 5
+            print('true')
             #break #i think these are causing the program to exit early
     
 ser.close()
