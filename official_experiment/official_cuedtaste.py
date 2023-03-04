@@ -1,6 +1,5 @@
 """
 Created on Mon Sep  9 14:15:36 2019
-
 @author: Daniel Svedberg pre-2021 (dsvedberg@brandeis.edu)
 @author: Emma Barash  2021-2022  (emmalala@brandeis.edu)
 """
@@ -91,16 +90,14 @@ class Cue:
         self.cuestate = True #changing cuestate hopefully will get caught by the record system
         print('raw', self.MESSAGE)
         
-
-        time.sleep(0.001)
-        received = ser.read(1)
-        print("Before While loop", received)
-        while not received == self.MESSAGE:
-            ser.write(self.MESSAGE)
-            time.sleep(0.001)
-            received = ser.read(1)
-            print("Inside", received)
-
+        #time.sleep(0.001)
+        #received = ser.read(1)
+        #while not received == self.MESSAGE: #commented out handshake to keep it lightweight
+        #end = time.time()+0.001
+        #while time.time() < end: #bombard recipient for 1 second
+        ser.write(self.MESSAGE)
+        #time.sleep(0.001)
+        #received = ser.read(1)
         print("message:", self.MESSAGE)
         self.cuestate = False
         
@@ -333,7 +330,6 @@ def cuedtaste():
             # line = random.randint(0,3)  # select random taste
             line = generate_sig(used_lines) 
             trig.play_cue() 
-
             #trig_run.value = 1
             state = 1
             print("new trial") #trigger light turns on to signal availability
@@ -345,7 +341,6 @@ def cuedtaste():
                 trig.flash_off()
                 #lines[3].deliver() #commented out the trigger delivery since we were using it for troubleshooting
                 lines[line].play_cue() # taste-associated cue cue is played
-
                 print("trigger activated")
                 #trig_run.value = 2  # trigger light goes from blinking to just on
                 rew.flash_on()
