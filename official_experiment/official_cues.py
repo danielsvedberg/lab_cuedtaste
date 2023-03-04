@@ -116,7 +116,7 @@ pg.init()
 for key, value in image_dict.items():
     image_dict[key] = pg.image.load(value)
 
-ser = serial.Serial('/dev/ttyS0', baudrate = 38400, timeout = 0.001)
+ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.01)
 ser.flushInput()
 ser.flushOutput()
 sig_ID = 0  # transfers the unique ID from receive function to main program
