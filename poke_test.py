@@ -30,7 +30,7 @@ class NosePoke:
     def light_test(self, duration = 20):
         start = time.time()
         end = start + duration 
-        while time.time < end:
+        while time.time() < end:
             time.sleep(0.5)
             self.led_off()
             print("LED off")
