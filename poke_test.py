@@ -49,7 +49,7 @@ class NosePoke:
             time.sleep(0.1) #pause for 0.1s each loop, otherwise your terminal will be flooded with 
             
 def main_menu():
-    options = ["LED test", "IR test",
+    options = ["LED test", "IR test", "set pin mapping",
                "exit"]
     print(67 * "-")
     print("MAIN MENU")
@@ -59,6 +59,15 @@ def main_menu():
     choice = int(input("Enter your choice [1-" + str(len(options)) + "]: "))
     print("option "+str(choice) + " selected")
     return choice
+
+def set_pins():
+    ledpin = int(input("set LED pin: "))
+    print("LED pin is now: " + ledpin)
+    
+    irpin = int(input("set IR pin: "))
+    print("IR pin is now: "+ irpin)
+    print("note: pin mapping will reset to default, after program is terminated")
+    return(ledpin, irpin)
 
 if __name__ == "__main__":
     
@@ -74,6 +83,9 @@ if __name__ == "__main__":
             elif choice == 2: 
                 poke.poke_test()
             elif choice == 3:
+                ledpin, irpin = set_pins()
+                poke = NosePoke(ledpin, irpin)
+            elif choice == 4:
                 print("program exit")
                 GPIO.cleanup()
                 break
