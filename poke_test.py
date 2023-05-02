@@ -64,13 +64,13 @@ if __name__ == "__main__":
     
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BOARD) #initialize GPIO in "board mode", meaning pin numbers are mapped to the literal raspberry pi pin number, not GPIO number 
-    poke = NosePoke(22,23) #initialize a nosepoke object. The LED is mapped to pin 22, and IR sensor is mapped to pin 23
+    poke = NosePoke(15,13) #initialize a nosepoke object. The LED is mapped to pin 22, and IR sensor is mapped to pin 23
 
     while True:
         choice = main_menu()
         try:
             if choice == 1:
-                poke.light_test()
+                poke.light_test(duration = 20)
             elif choice == 2: 
                 poke.poke_test()
             elif choice == 3:
