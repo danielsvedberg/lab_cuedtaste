@@ -35,7 +35,7 @@ RED = (255,   0,   0)
 screen_w = 800
 screen_h = 480
 
-image_dict = {1:'left_slant.jpeg', 2: 'vertical.jpeg', 3:'vertical.jpeg', 4: 'right_slant.jpeg'}
+image_dict = {1: 'left_slant.jpeg', 2: 'left_slant.jpeg', 3: 'left_slant.jpeg', 4: 'right_slant.jpeg'}
 
 class Block(pg.sprite.Sprite):
     """
@@ -125,7 +125,7 @@ screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
 audio_dict = {0: "9000hz_sine.wav",
-              1: "20000_square.wav", 
+              1: "9000hz_sine.wav", 
               2: "7000hz_unalias.wav", 
               3: "15000_saw.wav",
               4: "pink_noise.wav"}
@@ -144,16 +144,18 @@ for pin in pins:
 # pink noise indicates the ability to start the next trial
 # @run_once
 def pause_play(num):
+    pg.mixer.stop()
     if num == 4:
+        # pg.mixer.stop()
         audio_dict[num].play(-1)
     else:
-        pg.mixer.stop()
-        audio_dict[num].play()
+        # pg.mixer.stop()
+        audio_dict[num].play(-1)
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-cue_0 = Blockset(1,-80,0, image_dict[1]) #smaller value for "number" = faster flashing
-cue_1 = Blockset(1,80,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
+cue_0 = Blockset(1,-65,0, image_dict[1]) #smaller value for "number" = faster flashing
+cue_1 = Blockset(1,-65,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 # cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 cue_2 = Blockset(1,-100,0, image_dict[3])
 cue_3 = Blockset(1,100,0, image_dict[4])
@@ -244,8 +246,9 @@ while not done:
         #screen.fill(BLACK)
         #pg.display.flip()
         
-    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 1:
+    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 5:
             in_flag = 0
+            pg.mixer.stop()
             signal = 5
             print('true')
             
