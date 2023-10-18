@@ -144,16 +144,17 @@ for pin in pins:
 # pink noise indicates the ability to start the next trial
 # @run_once
 def pause_play(num):
+    pg.mixer.stop()
     if num == 4:
         audio_dict[num].play(-1)
     else:
-        pg.mixer.stop()
-        audio_dict[num].play()
+        # pg.mixer.stop()
+        audio_dict[num].play(-1)
 
 # This is a list of 'sprites.' Each block in the program is
 # added to this list. The list is managed by a class called 'Group.'
-cue_0 = Blockset(1,-80,0, image_dict[1]) #smaller value for "number" = faster flashing
-cue_1 = Blockset(1,80,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
+cue_0 = Blockset(1,-65,0, image_dict[1]) #smaller value for "number" = faster flashing
+cue_1 = Blockset(1,65,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 # cue_1 = Blockset(1,100,0, image_dict[2])  #bare minimum speed needed for flashing is 1000
 cue_2 = Blockset(1,-100,0, image_dict[3])
 cue_3 = Blockset(1,100,0, image_dict[4])
@@ -244,7 +245,7 @@ while not done:
         #screen.fill(BLACK)
         #pg.display.flip()
         
-    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 1:
+    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 5: # play the cue for five seconds (for the first part of taste training)
             in_flag = 0
             signal = 5
             print('true')

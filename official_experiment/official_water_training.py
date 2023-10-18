@@ -266,9 +266,23 @@ def system_report():
 
 
 ### SECTION 3: BEHAVIORAL TASK PROGRAMS ###
-# used_lines = []
-def generate_sig():
-    signal = 0
+used_lines = []
+def generate_sig(used_lines):
+    print('used:', used_lines, "len", len(used_lines))
+    # signal = random.randint(0,3) ### use for all four tastes
+    signal = random.randint(0,1)
+    
+    # if len(used_lines) == 4: ### use for all four tastes
+    if len(used_lines) == 2:
+        used_lines.clear()
+
+    if signal in used_lines:
+        print('old sig', signal)
+        # signal = int(random.choice([i for i in [0,1,2,3] if i not in used_lines])) ### use for all four tastes
+        signal = int(random.choice([i for i in [0,1] if i not in used_lines]))
+        print ('new sig', signal)
+    
+    used_lines.append(signal) #is this actualy appending?
     return signal
     
 ##cuedtaste is the central function that runs the behavioral task.
@@ -284,7 +298,7 @@ def cuedtaste():
     iti = 5  # inter-trial-interval
     wait = 1  # how long rat has to poke trigger to activate
     Hz = 3.9  # poke lamp flash frequency
-    crosstime = 10  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
+    crosstime = 6  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
 
     # setting up parallel multiprocesses for light flashing and data logging
     #rew_run = mp.Value("i", 0)
@@ -314,13 +328,14 @@ def cuedtaste():
             #rew_keep_out.join()
             #trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
             # line = random.randint(0,3)  # select random taste
-            line = generate_sig() 
+            line = generate_sig(used_lines) 
             trig.play_cue() 
             #trig_run.value = 1
             state = 1
             print("new trial") #trigger light turns on to signal availability
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
+            time.sleep(0.005)
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
                 #trig_run.value = 0
