@@ -290,6 +290,7 @@ def cuedtaste():
 
     anID = str(input("enter animal ID: "))
     runtime = int(input("enter runtime in minutes: "))
+    crosstime = int(input("enter starting crosstime in seconds: "))
     starttime = time.time()  # start of task
     endtime = starttime + runtime * 60  # end of task
     rew.endtime = endtime
@@ -298,7 +299,6 @@ def cuedtaste():
     iti = 5  # inter-trial-interval
     wait = 1  # how long rat has to poke trigger to activate
     Hz = 3.9  # poke lamp flash frequency
-    crosstime = 6  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
 
     # setting up parallel multiprocesses for light flashing and data logging
     #rew_run = mp.Value("i", 0)
@@ -317,7 +317,8 @@ def cuedtaste():
     # this loop controls the task as it happens, when [endtime] is reached, loop exits and task program closes out
     trig.flash_off()
     rew.flash_off()
-    
+
+    trial_history = []
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0: 
             trig.flash_on()
@@ -350,6 +351,7 @@ def cuedtaste():
                 state = 2
                 time.sleep(1) #impose a 1 second delay to reward activation, hopefully allows cue to play out
 
+        #state 2 is the end-stage of every trial--either the animal crosses rew in time and gets the reward, or misses the deadline and the trial times out
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
             #time.sleep(0.01)
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
@@ -358,10 +360,23 @@ def cuedtaste():
                 lines[line].deliver()
                 print("reward delivered")
                 state = 0
+                trial_history.append(1)
+
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0
                 #rew_run.value = 0
                 rew.flash_off()
                 state = 0
+                trial_history.append(0)
+
+            #this bit of code changes the crosstime when the rat gets 3 in a row correct or incorrect
+            #we run it at the end of every trial
+            last_3_trials = trial_history[-3:] #get the last three trials
+            if last_3_trials == [0,0,0]: #if the last three trials were incorrect
+                crosstime = crosstime+0.25 #increase crosstime
+                print("crosstime increased to: ", str(crosstime)) #print new crosstime
+            elif last_3_trials == [1,1,1]: #if the last three trials were correct
+                crosstime = crosstime-0.25 #decrease crosstime
+                print("crosstime decreased to: ", str(crosstime)) #print new crosstime
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()
@@ -384,7 +399,7 @@ if __name__=="__main__":
 
     # load configs
     config = configparser.ConfigParser()  # initialize configparser to read config file
-    config.read("cuedtaste_config.ini")  # read config file
+    config.read("waterhab_config.ini")  # read config file
     opentimes = json.loads(config.get("tastelines", "opentimes"))  # load into array times to open valves when taste delivered
     tastes = json.loads(config.get("tastelines", "tastes"))  # load taste labels into list
 
