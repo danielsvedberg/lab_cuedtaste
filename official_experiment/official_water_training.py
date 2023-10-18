@@ -266,6 +266,8 @@ def system_report():
 
 
 ### SECTION 3: BEHAVIORAL TASK PROGRAMS ###
+
+## => creating block trials (not used in water training)
 used_lines = []
 def generate_sig(used_lines):
     print('used:', used_lines, "len", len(used_lines))
@@ -282,14 +284,34 @@ def generate_sig(used_lines):
         signal = int(random.choice([i for i in [0,1] if i not in used_lines]))
         print ('new sig', signal)
     
-    used_lines.append(signal) #is this actualy appending?
+    used_lines.append(signal) 
     return signal
     
+## => tracking the crosstime of each trail
+trial_history = [1,1,0]
+def track_crosstime(trial_history, crosstime):
+    #this bit of code changes the crosstime when the rat gets 3 in a row correct or incorrect
+    #we run it at the end of every trial
+    trial_history.pop(0)
+    print("trial_hist:", trial_history)
+    #last_3_trials = trial_history[-3:] #get the last three trials
+    if last_3_trials == [0,0,0] and crosstime <= 12: #if the last three trials were incorrect
+        crosstime = crosstime+0.25 #increase crosstime
+        print("crosstime increased to: ", str(crosstime)) #print new crosstime
+
+    elif last_3_trials == [1,1,1] and crosstime > 6: #if the last three trials were correct
+        crosstime = crosstime-0.25 #decrease crosstime
+        print("crosstime decreased to: ", str(crosstime)) #print new crosstime
+    # trial_history.clear() 
+
+    return crosstime
+
 ##cuedtaste is the central function that runs the behavioral task.
 def cuedtaste():
 
     anID = str(input("enter animal ID: "))
     runtime = int(input("enter runtime in minutes: "))
+    global crosstime 
     crosstime = int(input("enter starting crosstime in seconds: "))
     starttime = time.time()  # start of task
     endtime = starttime + runtime * 60  # end of task
@@ -318,7 +340,7 @@ def cuedtaste():
     trig.flash_off()
     rew.flash_off()
 
-    trial_history = []
+    #trial_history = []
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0: 
             trig.flash_on()
@@ -367,16 +389,8 @@ def cuedtaste():
                 rew.flash_off()
                 state = 0
                 trial_history.append(0)
-
-            #this bit of code changes the crosstime when the rat gets 3 in a row correct or incorrect
-            #we run it at the end of every trial
-            last_3_trials = trial_history[-3:] #get the last three trials
-            if last_3_trials == [0,0,0]: #if the last three trials were incorrect
-                crosstime = crosstime+0.25 #increase crosstime
-                print("crosstime increased to: ", str(crosstime)) #print new crosstime
-            elif last_3_trials == [1,1,1]: #if the last three trials were correct
-                crosstime = crosstime-0.25 #decrease crosstime
-                print("crosstime decreased to: ", str(crosstime)) #print new crosstime
+            # change crosstime accordingly
+            crosstime = track_crosstime(trial_history, crosstime)
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()
@@ -455,7 +469,7 @@ if __name__=="__main__":
 
                     opentimes[line] = lines[line].opentime
                     config.set('tastelines', 'opentimes', str(opentimes))
-                    with open('cuedtaste_config.ini',
+                    with open('waterhab_config.ini',
                             'w') as configfile:  # in python 3+, 'w' follows filename, while in python 2+ it's 'wb'
                         config.write(configfile)
 
