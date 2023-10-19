@@ -190,12 +190,11 @@ class TasteCueLine(TasteLine, Cue):
 ### SECTION 2: MISC. FUNCTIONS
 
 # record() logs sensor and valve data to a .csv file. Typically instantiated as a multiprocessing.process
-def record(poke1, poke2, lines, starttime, endtime, anID):
+def record(poke1, poke2, lines, starttime, endtime, anID, dest_folder, start):
     print("recording started")
-    now = datetime.datetime.now()
-    d = now.strftime("%m%d%y_%Hh%Mm")
-    localpath = os.getcwd()
-    filepath = localpath + "/" + anID + "_" + d + ".csv"
+    start_date = start.strftime("%Y%m%d_%Hh%Mm")
+    filename = anID + "_" + start_date + "_cuedtaste.csv"
+    filepath = os.path.join(dest_folder, filename)
     with open(filepath, mode='w') as record_file:
         fieldnames = ['Time', 'Poke1', 'Poke2', 'Line1', 'Line2', 'Line3', 'Line4', 'Cue1', 'Cue2', 'Cue3', 'Cue4']
         record_writer = csv.writer(record_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -287,30 +286,15 @@ def generate_sig(used_lines):
     return signal
     
 ##cuedtaste is the central function that runs the behavioral task.
-def cuedtaste():
+def cuedtaste(anID, runtime, crosstime, dest_folder, start):
 
-    anID = str(input("enter animal ID: "))
-    runtime = int(input("enter runtime in minutes: "))
     starttime = time.time()  # start of task
     endtime = starttime + runtime * 60  # end of task
     rew.endtime = endtime
     trig.endtime = endtime
-    
-    iti = 5  # inter-trial-interval
-    wait = 1  # how long rat has to poke trigger to activate
-    Hz = 3.9  # poke lamp flash frequency
-    crosstime = 10  # how long rat has to cross from trigger to rewarder after activating trigger/arming rewrader.
 
-    # setting up parallel multiprocesses for light flashing and data logging
-    #rew_run = mp.Value("i", 0)
-    #trig_run = mp.Value("i", 0) # 'i' is for integer, datatype.
+    recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID, dest_folder))
 
-    #rew_flash = mp.Process(target=rew.flash, args=(Hz, rew_run,))
-    #trig_flash = mp.Process(target=trig.flash, args=(Hz, trig_run,))
-    recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID,))
-
-    #rew_flash.start()
-    #trig_flash.start()
     recording.start()
 
     state = 0  # [state] controls state of task. Refer to PDF of hand-drawn diagram for visual guide
@@ -322,30 +306,18 @@ def cuedtaste():
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0: 
             trig.flash_on()
-            #rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
-            #trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
-            #rew_keep_out.start()
-            #trig_keep_out.start()
-            #rew_keep_out.join()
-            #trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
-            # line = random.randint(0,3)  # select random taste
             line = generate_sig(used_lines) 
-            trig.play_cue() 
-            #trig_run.value = 1
+            trig.play_cue()
             state = 1
             print("new trial") #trigger light turns on to signal availability
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
-                #trig_run.value = 0
                 trig.flash_off()
-                #lines[3].deliver() #commented out the trigger delivery since we were using it for troubleshooting
                 lines[line].play_cue() # taste-associated cue cue is played
                 print("trigger activated")
-                #trig_run.value = 2  # trigger light goes from blinking to just on
                 rew.flash_on()
-                #rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 state = 2
                 time.sleep(1) #impose a 1 second delay to reward activation, hopefully allows cue to play out
@@ -353,13 +325,11 @@ def cuedtaste():
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
             #time.sleep(0.01)
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
-                #rew_run.value = 0
                 rew.flash_off()
                 lines[line].deliver()
                 print("reward delivered")
                 state = 0
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0
-                #rew_run.value = 0
                 rew.flash_off()
                 state = 0
 
@@ -368,9 +338,45 @@ def cuedtaste():
     trig.flash_off()
     rew.flash_off()
     recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
-    #rew_flash.join()
-    #trig_flash.join()
     print("assay completed")
+
+def get_cuedtaste_params():
+    anID = str(input("enter animal ID: "))
+    runtime = int(input("enter runtime in minutes: "))
+    crosstime = int(input("enter crosstime in seconds: "))
+    # create destination folder for data under Documents/cuedtaste_data/animalID if one doesn't exist
+    dest_folder = "/home/pi/Documents/cuedtaste_data/" + anID
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)
+        print("created folder " + dest_folder)
+    start = datetime.datetime.now()
+    return anID, runtime, crosstime, dest_folder, start
+
+#function that takes parameter inputs from cuedtaste() and logs them to a .txt file
+def log_metadata(anID, runtime, crosstime, lines, dest_folder, start):
+    #create .txt file with metadata
+    #first, create a .txt in writemode, with a title composed of the animal ID, date, and time in hh:mm format, concatenated by underscores:
+    d = start.strftime("%Y%m%d_%Hh%Mm")
+    filename = anID + "_" + d + "_cuedtaste_metadata.txt"
+
+    #create a filepath to the .txt file:
+    filepath = os.path.join(dest_folder, filename)
+    #create the .txt file in write mode:
+    with open(filepath, mode='w') as metadata_file:
+        #write the metadata to the .txt file:
+        metadata_file.write("Animal ID: " + anID + "\n")
+        metadata_file.write("Date: " + d + "\n")
+        metadata_file.write("Runtime: " + str(runtime) + " minutes" + "\n")
+        metadata_file.write("Crosstime: " + str(crosstime) + " seconds" + "\n")
+        metadata_file.write("Origin Folder: " + dest_folder + "\n")
+        #enter the tastes for each line into the .txt file as a list:
+        metadata_file.write("Tastes: " + str([i.taste for i in lines]) + "\n")
+        #enter the opentimes for each line into the .txt file as a list:
+        metadata_file.write("Opentimes: " + str([i.opentime for i in lines]) + "\n")
+        #enter the GPIO pins for each line into the .txt file as a list:
+        metadata_file.write("ValvePins: " + str([i.valve for i in lines]) + "\n")
+        #enter the intan GPIO pins for each line into the .txt file as a list:
+        metadata_file.write("IntanPins: " + str([i.intanOut for i in lines]) + "\n")
 
 ########################################################################################################################
 
@@ -395,7 +401,8 @@ if __name__=="__main__":
     intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
     # signal to separate device while "1" is emitted.
     # initialize taste-cue objects:
-        
+    intanDINs = [0,1,2,3]
+
     ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.01)
     ser.flushInput()
     ser.flushOutput()
@@ -412,6 +419,7 @@ if __name__=="__main__":
     # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a cue.
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
+
 	# flush input and output of serial
 
  # This loop executes the main menu and menu-options
@@ -446,7 +454,9 @@ if __name__=="__main__":
 
             elif choice == 3:  # run the actual program
                 print("starting cuedTaste")
-                cuedtaste()
+                anID, runtime, crosstime, dest_folder = get_cuedtaste_params()
+                log_metadata(anID, runtime, crosstime, lines, dest_folder)
+                cuedtaste(anID, runtime, crosstime, dest_folder)
             elif choice == 4:
                 print("program exit")
                 GPIO.cleanup()
@@ -454,3 +464,16 @@ if __name__=="__main__":
 
         except ValueError:
             print("please enter a number: ")
+
+#TODO:
+# make a function that allows us to change identites of taste lines
+# logging parameter
+## stuff for txt:
+## date--get in funciton
+## animal ID--collect before function
+## dict of tastes used--get from lines
+## dict of valves used--get from lines
+## dict of opentimes used--get from lines
+## crosstime used--collect before function
+## sessiontime used--collect before function
+## cue length--
