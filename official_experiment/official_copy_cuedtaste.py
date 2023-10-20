@@ -492,3 +492,6 @@ if __name__=="__main__":
 
         except ValueError:
             print("please enter a number: ")
+
+
+#TODO make an option three that prompts the user to enter a string for the four lines
