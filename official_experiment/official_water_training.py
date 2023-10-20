@@ -295,11 +295,11 @@ def track_crosstime(trial_history, crosstime):
     trial_history.pop(0)
     print("trial_hist:", trial_history)
     #last_3_trials = trial_history[-3:] #get the last three trials
-    if last_3_trials == [0,0,0] and crosstime <= 12: #if the last three trials were incorrect
+    if trial_history == [0,0,0] and crosstime <= 12: #if the last three trials were incorrect
         crosstime = crosstime+0.25 #increase crosstime
         print("crosstime increased to: ", str(crosstime)) #print new crosstime
 
-    elif last_3_trials == [1,1,1] and crosstime > 6: #if the last three trials were correct
+    elif trial_history == [1,1,1] and crosstime > 6: #if the last three trials were correct
         crosstime = crosstime-0.25 #decrease crosstime
         print("crosstime decreased to: ", str(crosstime)) #print new crosstime
     # trial_history.clear() 
