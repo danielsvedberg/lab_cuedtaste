@@ -293,7 +293,7 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
     rew.endtime = endtime
     trig.endtime = endtime
 
-    recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID, dest_folder))
+    recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID, dest_folder,))
 
     recording.start()
 
@@ -343,13 +343,17 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
 def get_cuedtaste_params():
     anID = str(input("enter animal ID: "))
     runtime = int(input("enter runtime in minutes: "))
-    crosstime = int(input("enter crosstime in seconds: "))
+    crosstime = int(input("enter crosstime in seconds: ")) #TODO: incorporate into .ini file, and make a function to update it
+    # make variable called start with current moment in time
+    start = datetime.datetime.now()
+    dt = start.strftime("%Y%m%d_%Hh%Mm")
+    rec_folder = "anID" + "_" + dt
     # create destination folder for data under Documents/cuedtaste_data/animalID if one doesn't exist
-    dest_folder = "/home/pi/Documents/cuedtaste_data/" + anID
+    dest_folder = "/home/pi/Documents/cuedtaste_data/" + anID + "/" + rec_folder
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
         print("created folder " + dest_folder)
-    start = datetime.datetime.now()
+
     return anID, runtime, crosstime, dest_folder, start
 
 #function that takes parameter inputs from cuedtaste() and logs them to a .txt file
@@ -419,8 +423,7 @@ if __name__=="__main__":
     # 13 = IR sensor input. Trigger is a special NosePoke class with added methods to control a cue.
     rew.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
     trig.flash_off()  # for some reason these lights come on by accident sometimes, so this turns off preemptively
-
-	# flush input and output of serial
+    # flush input and output of serial
 
  # This loop executes the main menu and menu-options
     while True:
