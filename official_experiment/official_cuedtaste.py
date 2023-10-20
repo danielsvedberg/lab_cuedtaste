@@ -275,6 +275,7 @@ def taste_set_menu():
 def system_report():
     line_no = 1
     print(67 * "-")
+    config.read("cuedtaste_config.ini")  # read config file
     print("SYSTEM REPORT:")
     for i in lines:
         print("line: " + str(line_no) + "    opentime: " + str(i.opentime) + " s" + "   taste: " + str(i.taste))

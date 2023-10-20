@@ -275,6 +275,7 @@ def taste_set_menu():
 # system_report() prints a system report of calibrations and tastes
 def system_report():
     line_no = 1
+    config.read("cuedtaste_config.ini")  # read config file
     print(67 * "-")
     print("SYSTEM REPORT:")
     for i in lines:
