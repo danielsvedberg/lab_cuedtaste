@@ -275,7 +275,7 @@ def taste_set_menu():
 def system_report():
     line_no = 1
     print(67 * "-")
-    config.read("cuedtaste_config.ini")  # read config file
+
     print("SYSTEM REPORT:")
     for i in lines:
         print("line: " + str(line_no) + "    opentime: " + str(i.opentime) + " s" + "   taste: " + str(i.taste))
@@ -309,7 +309,7 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
     rew.endtime = endtime
     trig.endtime = endtime
 
-    recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID, dest_folder,))
+    recording = mp.Process(target=record, args=(rew, trig, lines, starttime, endtime, anID, dest_folder, start,))
 
     recording.start()
 
@@ -363,9 +363,9 @@ def get_cuedtaste_params():
     # make variable called start with current moment in time
     start = datetime.datetime.now()
     dt = start.strftime("%Y%m%d_%Hh%Mm")
-    rec_folder = "anID" + "_" + dt
+    rec_folder = anID + "_" + dt
     # create destination folder for data under Documents/cuedtaste_data/animalID if one doesn't exist
-    dest_folder = "/home/pi/Documents/cuedtaste_data/" + anID + "/" + rec_folder
+    dest_folder = "/home/blechpi/Documents/cuedtaste_data/" + anID + "/" + rec_folder
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
         print("created folder " + dest_folder)
@@ -408,27 +408,27 @@ if __name__=="__main__":
     GPIO.cleanup() #turn off any GPIO pins that might be on
     GPIO.setmode(GPIO.BOARD)
 
-    # load configs
-    config = configparser.ConfigParser()  # initialize configparser to read config file
-    config.read("cuedtaste_config.ini")  # read config file
-    opentimes = json.loads(config.get("tastelines", "opentimes"))  # load into array times to open valves when taste delivered
-    tastes = json.loads(config.get("tastelines", "tastes"))  # load taste labels into list
+    # # load configs
+    # config = configparser.ConfigParser()  # initialize configparser to read config file
+    # config.read("cuedtaste_config.ini")  # read config file
+    # opentimes = json.loads(config.get("tastelines", "opentimes"))  # load into array times to open valves when taste delivered
+    # tastes = json.loads(config.get("tastelines", "tastes"))  # load taste labels into list
 
-    ## initialize objects used in task:
-    # initialize tastelines w/cues
-    tasteouts = [31, 33, 35, 37]  # GPIO pin outputs to taste valves. Opens the valve while "1" is emitted from GPIO,
-    # closes automatically with no voltage/ "0"
-    intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
-    # signal to separate device while "1" is emitted.
-    # initialize taste-cue objects:
-    intanDINs = [0,1,2,3]
+    # ## initialize objects used in task:
+    # # initialize tastelines w/cues
+    # tasteouts = [31, 33, 35, 37]  # GPIO pin outputs to taste valves. Opens the valve while "1" is emitted from GPIO,
+    # # closes automatically with no voltage/ "0"
+    # intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
+    # # signal to separate device while "1" is emitted.
+    # # initialize taste-cue objects:
+    # intanDINs = [0,1,2,3]
 
     ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.01)
     ser.flushInput()
     ser.flushOutput()
     
     sigs = [0,1,2,3] #TODO: what is going on here? Why is it 0-3 and then 5,6?
-    lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i], ser) for i in range(4)]
+    # lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i], ser) for i in range(4)]
     base = Cue(5, ser)
     end = Cue(6, ser)
     
@@ -443,6 +443,24 @@ if __name__=="__main__":
 
  # This loop executes the main menu and menu-options
     while True:
+
+        # load configs
+        config = configparser.ConfigParser()  # initialize configparser to read config file
+        config.read("cuedtaste_config.ini")  # read config file
+        opentimes = json.loads(config.get("tastelines", "opentimes"))  # load into array times to open valves when taste delivered
+        tastes = json.loads(config.get("tastelines", "tastes"))  # load taste labels into list
+
+        ## initialize objects used in task:
+        # initialize tastelines w/cues
+        tasteouts = [31, 33, 35, 37]  # GPIO pin outputs to taste valves. Opens the valve while "1" is emitted from GPIO,
+        # closes automatically with no voltage/ "0"
+        intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
+        # signal to separate device while "1" is emitted.
+        # initialize taste-cue objects:
+        intanDINs = [0,1,2,3]
+
+        lines = [TasteCueLine(tasteouts[i], intanouts[i], opentimes[i], tastes[i], sigs[i], ser) for i in range(4)]
+        
         ## While loop which will keep going until loop = False
         system_report()  # Displays valve opentimes and taste-line assignments
         choice = main_menu()  # Displays menu options
@@ -476,6 +494,10 @@ if __name__=="__main__":
                     with open('cuedtaste_config.ini',
                             'w') as configfile:  # in python 3+, 'w' follows filename, while in python 2+ it's 'wb'
                         config.write(configfile)
+                    
+
+                    for line, taste in zip(lines, formatted_tastes):
+                        line.taste = taste
             
             elif choice == 3:  # run calibration menu & calibration programs
                 while True:
@@ -496,7 +518,9 @@ if __name__=="__main__":
 
             elif choice == 4:  # run the actual program
                 print("starting cuedTaste")
-                cuedtaste()
+                anID, runtime, crosstime, dest_folder, start = get_cuedtaste_params()
+                log_metadata(anID, runtime, crosstime, lines, dest_folder, start)
+                cuedtaste(anID, runtime, crosstime, dest_folder, start)
             elif choice == 5:
                 print("program exit")
                 GPIO.cleanup()
