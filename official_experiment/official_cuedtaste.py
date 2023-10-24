@@ -320,6 +320,7 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
     rew.flash_off()
 
     trial_dur = crosstime + 1
+    trial_end = time.time()
 
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0:
