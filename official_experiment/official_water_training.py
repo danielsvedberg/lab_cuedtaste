@@ -299,7 +299,7 @@ def track_crosstime(trial_history, crosstime):
         crosstime = crosstime+0.25 #increase crosstime
         print("crosstime increased to: ", str(crosstime)) #print new crosstime
 
-    elif trial_history == [1,1,1] and crosstime > 6: #if the last three trials were correct
+    elif trial_history == [1,1,1] and crosstime >= 4: #if the last three trials were correct, and crosstime is greater than 4s
         crosstime = crosstime-0.25 #decrease crosstime
         print("crosstime decreased to: ", str(crosstime)) #print new crosstime
     # trial_history.clear() 
@@ -340,25 +340,19 @@ def cuedtaste():
     trig.flash_off()
     rew.flash_off()
 
-    #trial_history = []
+    trial_dur = crosstime+1
+    trial_end = time.time()
+
     while time.time() <= endtime: 
-        while state == 0 and time.time() <= endtime:  # state 0: 
-            trig.flash_on()
-            #rew_keep_out = mp.Process(target=rew.keep_out, args=(iti,))     # reminder: target = target function; args = inter-trial-interval (5sec) 
-            #trig_keep_out = mp.Process(target=trig.keep_out, args=(iti,))
-            #rew_keep_out.start()
-            #trig_keep_out.start()
-            #rew_keep_out.join()
-            #trig_keep_out.join()  # if rat stays out of both nose pokes, state 1 begins
-            # line = random.randint(0,3)  # select random taste
-            line = generate_sig(used_lines) 
-            trig.play_cue() 
-            #trig_run.value = 1
-            state = 1
-            print("new trial") #trigger light turns on to signal availability
+        while state == 0 and time.time() <= endtime:  # state 0:
+            if time.time() > trial_end:
+                trig.flash_on()
+                line = generate_sig(used_lines)
+                trig.play_cue()
+                state = 1
+                print("new trial") #trigger light turns on to signal availability
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
-            time.sleep(0.005)
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
                 #trig_run.value = 0
@@ -371,6 +365,7 @@ def cuedtaste():
                 #rew_run.value = 1
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 state = 2
+                trial_end = time.time() + trial_dur #set the trial end time to the current time plus the trial duration
                 time.sleep(1) #impose a 1 second delay to reward activation, hopefully allows cue to play out
 
         #state 2 is the end-stage of every trial--either the animal crosses rew in time and gets the reward, or misses the deadline and the trial times out
@@ -391,14 +386,13 @@ def cuedtaste():
                 trial_history.append(0)
             # change crosstime accordingly
             crosstime = track_crosstime(trial_history, crosstime)
+            trial_dur = crosstime+1
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()
     trig.flash_off()
     rew.flash_off()
     recording.join()  # wait for data logging and light blinking processes to commit seppuku when session is over
-    #rew_flash.join()
-    #trig_flash.join()
     print("assay completed")
 
 ########################################################################################################################

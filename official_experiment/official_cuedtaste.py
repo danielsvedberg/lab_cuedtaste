@@ -318,14 +318,18 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
     # this loop controls the task as it happens, when [endtime] is reached, loop exits and task program closes out
     trig.flash_off()
     rew.flash_off()
-    
+
+    trial_dur = crosstime + 1
+    trial_end = time.time()
+
     while time.time() <= endtime: 
-        while state == 0 and time.time() <= endtime:  # state 0: 
-            trig.flash_on()
-            line = generate_sig(used_lines) 
-            trig.play_cue()
-            state = 1
-            print("new trial") #trigger light turns on to signal availability
+        while state == 0 and time.time() <= endtime:  # state 0:
+            if time.time() > trial_end:
+                trig.flash_on()
+                line = generate_sig(used_lines)
+                trig.play_cue()
+                state = 1
+                print("new trial") #trigger light turns on to signal availability
 
         while state == 1 and time.time() <= endtime:  # state 1: new trial started/arming Trigger
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
@@ -336,6 +340,7 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
                 rew.flash_on()
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
                 state = 2
+                trial_end = time.time() + trial_dur # gates start of next trial to be no sooner than trial_dur
                 time.sleep(1) #impose a 1 second delay to reward activation, hopefully allows cue to play out
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
