@@ -294,9 +294,7 @@ def track_crosstime(trial_history, crosstime):
     #we run it at the end of every trial
     if len(trial_history) > 3:
         trial_history.pop(0)
-        
-    print("trial_hist:", trial_history)
-    #last_3_trials = trial_history[-3:] #get the last three trials
+
     if trial_history == [0,0,0] and crosstime <= 12: #if the last three trials were incorrect
         crosstime = crosstime+0.25 #increase crosstime
         print("crosstime increased to: ", str(crosstime)) #print new crosstime
@@ -304,8 +302,6 @@ def track_crosstime(trial_history, crosstime):
     elif trial_history == [1,1,1] and crosstime >= 4: #if the last three trials were correct, and crosstime is greater than 4s
         crosstime = crosstime-0.25 #decrease crosstime
         print("crosstime decreased to: ", str(crosstime)) #print new crosstime
-    # trial_history.clear() 
-
     return crosstime
 
 ##cuedtaste is the central function that runs the behavioral task.
@@ -376,8 +372,9 @@ def cuedtaste():
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
                 #rew_run.value = 0
                 rew.flash_off()
-                lines[line].deliver()
+                lines[0].deliver()
                 print("reward delivered")
+                base.play_cue()
                 state = 0
                 trial_history.append(1)
 
