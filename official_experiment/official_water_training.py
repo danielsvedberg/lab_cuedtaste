@@ -292,7 +292,9 @@ trial_history = [1,1,0]
 def track_crosstime(trial_history, crosstime):
     #this bit of code changes the crosstime when the rat gets 3 in a row correct or incorrect
     #we run it at the end of every trial
-    trial_history.pop(0)
+    if len(trial_history) > 3:
+        trial_history.pop(0)
+        
     print("trial_hist:", trial_history)
     #last_3_trials = trial_history[-3:] #get the last three trials
     if trial_history == [0,0,0] and crosstime <= 12: #if the last three trials were incorrect
