@@ -282,27 +282,6 @@ def system_report():
         line_no = line_no + 1
 
 ### SECTION 3: BEHAVIORAL TASK PROGRAMS ###
-trial_history = [1,1,0]
-def track_crosstime(trial_history, crosstime):
-    #this bit of code changes the crosstime when the rat gets 3 in a row correct or incorrect
-    #we run it at the end of every trial
-    if len(trial_history) > 3:
-        trial_history.pop(0)
-    
-    in_flag = 0
-
-    if trial_history == [0,0,0] and crosstime <= 12 and in_flag == 0: #if the last three trials were incorrect
-        crosstime = crosstime+0.25 #increase crosstime
-        print("crosstime increased to: ", str(crosstime)) #print new crosstime
-        in_flag = 1
-
-    elif trial_history == [1,1,1] and crosstime >= 4 and in_flag == 0: #if the last three trials were correct, and crosstime is greater than 4s
-        crosstime = crosstime-0.25 #decrease crosstime
-        print("crosstime decreased to: ", str(crosstime)) #print new crosstime
-        in_flag = 1
-
-    return crosstime
-    
 used_lines = []
 def generate_sig(used_lines):
     print('used:', used_lines, "len", len(used_lines))
@@ -364,26 +343,18 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
                 trial_end = time.time() + trial_dur # gates start of next trial to be no sooner than trial_dur
                 time.sleep(1) #impose a 1 second delay to reward activation, hopefully allows cue to play out
 
-        #state 2 is the end-stage of every trial--either the animal crosses rew in time and gets the reward, or misses the deadline and the trial times out
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
             #time.sleep(0.01)
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
-                #rew_run.value = 0
                 rew.flash_off()
                 lines[line].deliver()
                 print("reward delivered")
-                base.play_cue()
                 state = 0
-                trial_history.append(1)
+                base.play_cue() # make sure the cue stops playing after delivery
 
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0
-                #rew_run.value = 0
                 rew.flash_off()
                 state = 0
-                trial_history.append(0)
-            # change crosstime accordingly
-        crosstime = track_crosstime(trial_history, crosstime)
-        trial_dur = crosstime+1
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()
@@ -393,7 +364,6 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
     print("assay completed")
 
 def get_cuedtaste_params():
-
     anID = str(input("enter animal ID: "))
     runtime = int(input("enter runtime in minutes: "))
     crosstime = int(input("enter crosstime in seconds: ")) #TODO: incorporate into .ini file, and make a function to update it
