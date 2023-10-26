@@ -388,9 +388,9 @@ def cuedtaste():
                 rew.flash_off()
                 state = 0
                 trial_history.append(0)
-            # change crosstime accordingly
-            crosstime = track_crosstime(trial_history, crosstime)
-            trial_dur = crosstime+1
+        # change crosstime accordingly (just once at a time)
+        crosstime = track_crosstime(trial_history, crosstime)
+        trial_dur = crosstime+1
 
     base.play_cue()  # kill any lingering cues after task is over
     end.play_cue()
