@@ -294,14 +294,19 @@ def track_crosstime(trial_history, crosstime):
     #we run it at the end of every trial
     if len(trial_history) > 3:
         trial_history.pop(0)
+    
+    in_flag = 0
 
-    if trial_history == [0,0,0] and crosstime <= 12: #if the last three trials were incorrect
+    if trial_history == [0,0,0] and crosstime <= 12 and in_flag == 0: #if the last three trials were incorrect
         crosstime = crosstime+0.25 #increase crosstime
         print("crosstime increased to: ", str(crosstime)) #print new crosstime
+        in_flag = 1
 
-    elif trial_history == [1,1,1] and crosstime >= 4: #if the last three trials were correct, and crosstime is greater than 4s
+    elif trial_history == [1,1,1] and crosstime >= 4 and in_flag == 0: #if the last three trials were correct, and crosstime is greater than 4s
         crosstime = crosstime-0.25 #decrease crosstime
         print("crosstime decreased to: ", str(crosstime)) #print new crosstime
+        in_flag = 1
+
     return crosstime
 
 ##cuedtaste is the central function that runs the behavioral task.
