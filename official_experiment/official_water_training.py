@@ -377,7 +377,7 @@ def cuedtaste():
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
                 #rew_run.value = 0
                 rew.flash_off()
-                lines[0].deliver()
+                lines[1].deliver()
                 print("reward delivered")
                 base.play_cue()
                 state = 0

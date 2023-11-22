@@ -324,6 +324,7 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
 
     while time.time() <= endtime: 
         while state == 0 and time.time() <= endtime:  # state 0:
+            flag = 0
             if time.time() > trial_end:
                 trig.flash_on()
                 line = generate_sig(used_lines)
@@ -335,7 +336,7 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
             if trig.is_crossed():  # once the trigger-nosepoke is crossed, move to state 2
                 print("cue number: ", str(line))
                 trig.flash_off()
-                lines[line].play_cue() # taste-associated cue cue is played
+                # lines[line].play_cue() # taste-associated cue cue is played
                 print("trigger activated")
                 rew.flash_on()
                 deadline = time.time() + crosstime # rat has 10 sec to activate rewarder
@@ -345,12 +346,16 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
 
         while state == 2 and time.time() <= endtime:  # state 3: Activating rewarder/delivering taste
             #time.sleep(0.01)
-            if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
+            if rew.is_crossed() and time.time() and flag == 0:  # if rat crosses rewarder beam, deliver taste
                 rew.flash_off()
                 lines[line].deliver()
+                flag = 1
+                timer = time.time()
+                lines[line].play_cue() # taste-associated cue cue is played
                 print("reward delivered")
-                state = 0
-                base.play_cue() # make sure the cue stops playing after delivery
+                if time.time() == timer + 4:
+                    state = 0
+                    base.play_cue() # make sure the cue stops playing after delivery
 
             if time.time() > deadline:  # if rat misses reward deadline, return to state 0
                 rew.flash_off()

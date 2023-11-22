@@ -27,7 +27,6 @@ import random
 import RPi.GPIO as GPIO
 import serial
 from math import ceil
-import math
 
 # Define some colors
 BLACK = (0,   0,   0)
@@ -99,41 +98,6 @@ def create_horizontal_bars(speed_y):
 
     return bar_group
 
-class DiagonalBar(pg.sprite.Sprite):
-    def __init__(self, screen_width, screen_height, speed_x, speed_y):
-        super().__init__()
-        diagonal_length = int(math.sqrt(screen_width**2 + screen_height**2))
-        self.image = pg.Surface([diagonal_length, 5], pg.SRCALPHA)
-        self.image.fill((0, 0, 0, 0))  # Transparent background
-        pg.draw.line(self.image, (0, 0, 0), (0, 0), (diagonal_length, 5), 5)  # Draw diagonal line
-
-        # Initial position of the bar
-        self.rect = self.image.get_rect(center=(-diagonal_length // 2, random.randint(0, screen_height)))
-
-        self.speed_x = speed_x
-        self.speed_y = speed_y
-
-    def update(self):
-        self.rect.x += self.speed_x
-        self.rect.y += self.speed_y
-
-        # Check if the bar has moved off the screen
-        if self.rect.right < 0 or self.rect.left > screen_w or self.rect.bottom < 0 or self.rect.top > screen_h:
-            # Reset position
-            self.rect.x = -self.rect.w
-            self.rect.y = random.randint(0, screen_h)
-
-
-# Function to create diagonal bars
-def create_diagonal_bars(num_bars, speed_x, speed_y):
-    bar_group = pg.sprite.Group()
-
-    for _ in range(num_bars):
-        bar = DiagonalBar(screen_w, screen_h, speed_x, speed_y)
-        bar_group.add(bar)
-
-    return bar_group
-
 # blocket is now modified to make a large block pass through the screen very fast to appear as flashing, rather than many bars moving
 def Blockset(speed_x, cue_num): 
     spritelist = pg.sprite.Group() 
@@ -176,9 +140,9 @@ sig_ID = 0  # transfers the unique ID from receive function to main program
 screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 
 # created a dictionary containing the .wav files
-audio_dict = {0: "15000_saw.wav",
+audio_dict = {0: "20000_square.wav",
               1: "9000hz_sine.wav", 
-              2: "20000_square.wav", 
+              2: "7000hz_unalias.wav", 
               3: "15000_saw.wav",
               4: "pink_noise.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
@@ -209,7 +173,7 @@ def pause_play(num):
 cue_0 = Blockset(4, 0)
 cue_1 = Blockset(-4, 1)
 cue_2 = create_horizontal_bars(3)
-cue_3 = create_horizontal_bars(-3)
+cue_3 = create_horizontal_bars(-2)
 cue_4 = Blockset(0, 4)
 cue_5 = Blockset(0, 5)
 

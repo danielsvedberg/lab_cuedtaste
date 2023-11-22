@@ -286,7 +286,7 @@ used_lines = []
 def generate_sig(used_lines):
     print('used:', used_lines, "len", len(used_lines))
     # signal = random.randint(0,3) ### use for all four tastes
-    signal = random.randint(0,2)
+    signal = random.randint(0,1)
     
     # if len(used_lines) == 4: ### use for all four tastes
     if len(used_lines) == 2:
@@ -295,7 +295,7 @@ def generate_sig(used_lines):
     if signal in used_lines:
         print('old sig', signal)
         # signal = int(random.choice([i for i in [0,1,2,3] if i not in used_lines])) ### use for all four tastes
-        signal = int(random.choice([i for i in [0,1,2] if i not in used_lines]))
+        signal = int(random.choice([i for i in [0,1] if i not in used_lines]))
         print ('new sig', signal)
     
     used_lines.append(signal) #is this actualy appending?
@@ -347,7 +347,7 @@ def cuedtaste(anID, runtime, crosstime, dest_folder, start):
             #time.sleep(0.01)
             if rew.is_crossed() and time.time():  # if rat crosses rewarder beam, deliver taste
                 rew.flash_off()
-                lines[line].deliver()
+                lines[1].deliver()
                 print("reward delivered")
                 state = 0
                 base.play_cue() # make sure the cue stops playing after delivery
