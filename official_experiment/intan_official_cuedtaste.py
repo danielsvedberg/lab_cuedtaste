@@ -154,7 +154,8 @@ class TasteLine:
         # user to input a calibration time, and then opens the valve 5 times for that time, so the user can weigh out
         # how much liquid is dispensed per delivery.
         opentime = float(input("enter an opentime (like 0.05) to start calibration: "))
-        while True:
+        isSet = False
+        while isSet == False:
             # Open ports
             for rep in range(5):
                 GPIO.output(self.valve, 1)
@@ -165,9 +166,11 @@ class TasteLine:
             if ans == 'y':
                 self.opentime = opentime
                 print("opentime saved")
-                break
+                isSet = True
             else:
                 opentime = int(input('enter new opentime: '))
+                isSet = False
+                
 
     def deliver(self):  # deliver() is used in the context of a task to open the valve for the saved opentime to
         # deliver liquid through the line
