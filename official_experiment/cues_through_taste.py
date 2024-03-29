@@ -289,7 +289,7 @@ def generate_sig(used_lines):
     signal = random.randint(0,2)
     
     # if len(used_lines) == 4: ### use for all four tastes
-    if len(used_lines) == 2:
+    if len(used_lines) == 3:
         used_lines.clear()
 
     if signal in used_lines:

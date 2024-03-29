@@ -27,6 +27,7 @@ import random
 import RPi.GPIO as GPIO
 import serial
 from math import ceil
+import math
 
 # Define some colors
 BLACK = (0,   0,   0)
@@ -98,6 +99,41 @@ def create_horizontal_bars(speed_y):
 
     return bar_group
 
+class DiagonalBar(pg.sprite.Sprite):
+    def __init__(self, screen_width, screen_height, speed_x, speed_y):
+        super().__init__()
+        diagonal_length = int(math.sqrt(screen_width**2 + screen_height**2))
+        self.image = pg.Surface([diagonal_length, 5], pg.SRCALPHA)
+        self.image.fill((0, 0, 0, 0))  # Transparent background
+        pg.draw.line(self.image, (0, 0, 0), (0, 0), (diagonal_length, 5), 5)  # Draw diagonal line
+
+        # Initial position of the bar
+        self.rect = self.image.get_rect(center=(-diagonal_length // 2, random.randint(0, screen_height)))
+
+        self.speed_x = speed_x
+        self.speed_y = speed_y
+
+    def update(self):
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+
+        # Check if the bar has moved off the screen
+        if self.rect.right < 0 or self.rect.left > screen_w or self.rect.bottom < 0 or self.rect.top > screen_h:
+            # Reset position
+            self.rect.x = -self.rect.w
+            self.rect.y = random.randint(0, screen_h)
+
+
+# Function to create diagonal bars
+def create_diagonal_bars(num_bars, speed_x, speed_y):
+    bar_group = pg.sprite.Group()
+
+    for _ in range(num_bars):
+        bar = DiagonalBar(screen_w, screen_h, speed_x, speed_y)
+        bar_group.add(bar)
+
+    return bar_group
+
 # blocket is now modified to make a large block pass through the screen very fast to appear as flashing, rather than many bars moving
 def Blockset(speed_x, cue_num): 
     spritelist = pg.sprite.Group() 
@@ -142,23 +178,28 @@ screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
 # created a dictionary containing the .wav files
 audio_dict = {0: "15000_saw.wav",
               1: "9000hz_sine.wav", 
-              2: "7000hz_unalias.wav", 
+              2: "20000_square.wav", 
               3: "15000_saw.wav",
               4: "pink_noise.wav"}
 # iterates through the dictionary to load the sound-values that correspond to the keys
 for key, value in audio_dict.items():
     audio_dict[key] = load_sound(value)
 
-pins = [11,13,15,16]
+#pins = [11,13,15,16]
+intanOuts = [11,13,15] # 17 is cue 1, 27 is cue 2, 22 is cue 3
 GPIO.setwarnings(False)
 GPIO.cleanup() #turn off any GPIO pins that might be on
 GPIO.setmode(GPIO.BOARD)
-for pin in pins:
-    GPIO.setup(pin, GPIO.OUT)
+#for pin in pins:
+   # GPIO.setup(pin, GPIO.OUT)
+for intanOut in intanOuts:
+    GPIO.setup(intanOut, GPIO.OUT)
+    GPIO.output(intanOut,0)
 # function called in the main loop to play new sound according to keypress, which is the "num" parameter
 # if the signal is 5, the pink noise will play until the animal begins the next trial
 # pink noise indicates the ability to start the next trial
 # @run_once
+
 def pause_play(num):
     pg.mixer.stop()
     if num == 4:
@@ -173,7 +214,7 @@ def pause_play(num):
 cue_0 = Blockset(4, 0)
 cue_1 = Blockset(-4, 1)
 cue_2 = create_horizontal_bars(3)
-cue_3 = create_horizontal_bars(-2)
+cue_3 = create_horizontal_bars(-3)
 cue_4 = Blockset(0, 4)
 cue_5 = Blockset(0, 5)
 
@@ -195,7 +236,6 @@ clock.tick(60)
 signal = 5 #this sets the base signal. Changed from 0 because signal for 0 was changed to a sine wave and blocks, which is not what we want
 old_value = signal
 old_ID = sig_ID  # dec. 2021
-
 
 in_flag = 1  # in flag is used to condition the if statements below so that pause_play() is triggered only once when states change
 cnums = [0,1,2,3]
@@ -227,8 +267,14 @@ while not done:
                 signal, "old ID", old_ID, "new ID", sig_ID)
         in_flag = 0
 
+        # if old_value in [0,1,2]:
+        [GPIO.output(i,0) for i in intanOuts]
+        # print("test off", intanOuts[old_value])
+        if signal in [0,1,2]:
+            GPIO.output(intanOuts[signal], 1)
+            print("test on", intanOuts[signal])
+
     #if in_flag == 0:  # PRINT TO CONSOLE TEST 
-       
 
     # Clear the screen
     screen.fill(WHITE)
@@ -239,6 +285,7 @@ while not done:
             done = True
         if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
             done = True
+    
             
     if signal == 4 and in_flag == 0: #trigger open cue
         in_flag = 1
@@ -252,7 +299,10 @@ while not done:
         in_flag = 1
         pause_play(signal)
         #GPIO.output(pins[signal],1)
-        last_pin = pins[signal]
+        #last_pin = pins[signal]
+        # if not signal == 0:
+        #     GPIO.output(intanOuts[signal], 1)
+
         cueend = time.time() + 1
         #GPIO.output(pins[signal],0) #commented out to help with debugging
 
@@ -260,10 +310,11 @@ while not done:
         cue = cues[5] #this should replace the previously presented cue with a black screen
         in_flag = 1
         pg.mixer.stop()
+        # GPIO.output(intanOuts[signal], 0)
         # screen.fill(BLACK)
         # pg.display.flip()
         
-    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + 5: # play the cue for five seconds (for the first part of taste training)
+    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + (1): # play the cue for five seconds (for the first part of taste training)
             in_flag = 0
             signal = 5
             print('true')
@@ -292,4 +343,5 @@ while not done:
             #break #i think these are causing the program to exit early
     
 ser.close()
+GPIO.cleanup()
 pg.quit()

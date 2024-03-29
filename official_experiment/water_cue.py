@@ -35,7 +35,7 @@ RED = (255,   0,   0)
 screen_w = 800
 screen_h = 480
 
-image_dict = {1: 'left_slant.jpeg', 2: 'left_slant.jpeg', 3: 'left_slant.jpeg', 4: 'right_slant.jpeg'}
+image_dict = {1: 'left_slant.jpeg', 2: 'left_slant.jpeg', 3: 'left_slant.jpeg', 4: 'left_slant.jpeg'}
 
 class Block(pg.sprite.Sprite):
     """

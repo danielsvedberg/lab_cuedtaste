@@ -289,7 +289,7 @@ def generate_sig(used_lines):
     signal = random.randint(0,2)
     
     # if len(used_lines) == 4: ### use for all four tastes
-    if len(used_lines) == 2:
+    if len(used_lines) == 3:
         used_lines.clear()
 
     if signal in used_lines:
@@ -415,21 +415,6 @@ if __name__=="__main__":
     GPIO.setwarnings(False)
     GPIO.cleanup() #turn off any GPIO pins that might be on
     GPIO.setmode(GPIO.BOARD)
-
-    # # load configs
-    # config = configparser.ConfigParser()  # initialize configparser to read config file
-    # config.read("cuedtaste_config.ini")  # read config file
-    # opentimes = json.loads(config.get("tastelines", "opentimes"))  # load into array times to open valves when taste delivered
-    # tastes = json.loads(config.get("tastelines", "tastes"))  # load taste labels into list
-
-    # ## initialize objects used in task:
-    # # initialize tastelines w/cues
-    # tasteouts = [31, 33, 35, 37]  # GPIO pin outputs to taste valves. Opens the valve while "1" is emitted from GPIO,
-    # # closes automatically with no voltage/ "0"
-    # intanouts = [24, 26, 19, 21]  # GPIO pin outputs to intan board (for marking taste deliveries in neural data). Sends
-    # # signal to separate device while "1" is emitted.
-    # # initialize taste-cue objects:
-    # intanDINs = [0,1,2,3]
 
     ser = serial.Serial('/dev/ttyS0', baudrate = 57600, timeout = 0.01)
     ser.flushInput()
