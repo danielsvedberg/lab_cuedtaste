@@ -314,7 +314,7 @@ while not done:
         # screen.fill(BLACK)
         # pg.display.flip()
         
-    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + (1): # play the cue for five seconds (for the first part of taste training)
+    if signal != 4 and signal != 5 and signal != 6 and time.time() >= now + (0.5): # play the cue for five seconds (for the first part of taste training)
             in_flag = 0
             signal = 5
             print('true')
